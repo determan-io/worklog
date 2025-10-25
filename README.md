@@ -90,14 +90,14 @@ worklog/
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 18+ and pnpm 8+
 - PostgreSQL 14+
 - Docker and Docker Compose
 - Keycloak instance
 
 ### Development Setup
 1. Clone the repository
-2. Install dependencies: `npm install`
+2. Install dependencies: `pnpm install`
 3. Set up environment variables
 4. Start Keycloak instance
 5. Run database migrations

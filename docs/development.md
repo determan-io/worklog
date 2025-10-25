@@ -3,7 +3,7 @@
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20+ and npm 10+
+- Node.js 20+ and pnpm 8+
 - PostgreSQL 16+
 - Docker and Docker Compose
 - Keycloak instance (local or cloud)
@@ -20,10 +20,10 @@ cd worklog
 2. **Install dependencies**
 ```bash
 # Install root dependencies
-npm install
+pnpm install
 
 # Install dependencies for each app
-npm run install:all
+pnpm run install:all
 ```
 
 3. **Set up environment variables**
@@ -34,33 +34,47 @@ cp apps/web/.env.example apps/web/.env
 cp apps/mobile/.env.example apps/mobile/.env
 ```
 
-4. **Start Keycloak with Docker**
+4. **Start infrastructure services**
 ```bash
-docker-compose up keycloak -d
-```
-
-5. **Set up the database**
-```bash
-# Start PostgreSQL
-docker-compose up postgres -d
+# Start PostgreSQL and Keycloak
+docker-compose up -d
 
 # Run database migrations
-npm run db:migrate
+pnpm run db:migrate
 
 # Seed development data
-npm run db:seed
+pnpm run db:seed
 ```
 
 6. **Start development servers**
 ```bash
 # Start all services
-npm run dev
+pnpm run dev
 
 # Or start individually
-npm run dev:api    # API server on port 3001
-npm run dev:web    # Web app on port 3000
-npm run dev:mobile # Mobile app (Expo)
+pnpm run dev:api    # API server on port 3001
+pnpm run dev:web    # Web app on port 3000
+pnpm run dev:mobile # Mobile app (Expo)
 ```
+
+## Infrastructure Services
+
+### PostgreSQL Database
+- **Host**: localhost:5432
+- **Database**: worklog
+- **Username**: worklog
+- **Password**: worklog123
+
+### Keycloak Authentication
+- **Admin Console**: http://localhost:8080/admin
+- **Realm**: worklog
+- **Admin User**: admin / admin123
+- **Test User**: user / user123
+
+### Access Points
+- **Keycloak Admin Console**: http://localhost:8080/admin
+- **Worklog Realm**: http://localhost:8080/realms/worklog
+- **Realm Account Management**: http://localhost:8080/realms/worklog/account
 
 7. **Access API Documentation**
 ```bash
@@ -119,12 +133,8 @@ worklog/
 │       ├── schema.prisma    # Prisma schema
 │       ├── migrations/      # Database migrations
 │       └── seed/            # Seed data
-├── infrastructure/
-│   └── docker/              # Docker configurations
-│       ├── docker-compose.yml
-│       ├── Dockerfile.api
-│       ├── Dockerfile.web
-│       └── Dockerfile.mobile
+├── docker-compose.yml       # Docker Compose configuration
+├── keycloak-realm.json     # Keycloak realm configuration
 ├── docs/                    # Documentation
 └── package.json            # Root package.json
 ```
@@ -292,13 +302,13 @@ model TimeEntry {
 #### Migrations
 ```bash
 # Create migration
-npx prisma migrate dev --name add_time_entries
+pnpm exec prisma migrate dev --name add_time_entries
 
 # Reset database
-npx prisma migrate reset
+pnpm exec prisma migrate reset
 
 # Generate Prisma client
-npx prisma generate
+pnpm exec prisma generate
 ```
 
 #### Seed Data
@@ -347,7 +357,7 @@ app.use('/api/v1', apiRoutes);
 #### Generate API Client
 ```bash
 # Generate TypeScript client from OpenAPI spec
-npm run client:generate
+pnpm run client:generate
 
 # The generated client will be available in packages/api-client
 ```
@@ -557,7 +567,7 @@ export class LocalStorageService {
 ### API Debugging
 ```bash
 # Enable debug logging
-DEBUG=worklog:* npm run dev:api
+DEBUG=worklog:* pnpm run dev:api
 
 # View API logs
 docker-compose logs -f api
@@ -566,11 +576,11 @@ docker-compose logs -f api
 ### Frontend Debugging
 ```bash
 # Web app debugging
-npm run dev:web
+pnpm run dev:web
 # Open browser dev tools
 
 # Mobile app debugging
-npm run dev:mobile
+pnpm run dev:mobile
 # Use Expo dev tools or React Native debugger
 ```
 
@@ -608,7 +618,7 @@ docker-compose logs -f postgres
 ### Development Deployment
 ```bash
 # Build all applications
-npm run build:all
+pnpm run build:all
 
 # Start with Docker Compose
 docker-compose up -d
@@ -636,7 +646,7 @@ docker-compose ps postgres
 docker-compose logs postgres
 
 # Reset database
-npm run db:reset
+pnpm run db:reset
 ```
 
 #### Keycloak Issues
@@ -648,7 +658,10 @@ docker-compose ps keycloak
 docker-compose logs keycloak
 
 # Access Keycloak admin console
-open http://localhost:8080
+open http://localhost:8080/admin
+
+# Access worklog realm
+open http://localhost:8080/realms/worklog
 ```
 
 #### Mobile App Issues
@@ -660,7 +673,7 @@ npx expo start --clear
 npx react-native start --reset-cache
 
 # Reinstall node_modules
-rm -rf node_modules && npm install
+rm -rf node_modules && pnpm install
 ```
 
 ### Getting Help

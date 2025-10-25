@@ -265,11 +265,15 @@ type Mutation {
 ┌─────────────────┐
 │   Docker Compose│
 ├─────────────────┤
+│   PostgreSQL    │
+│   Keycloak      │
+└─────────────────┘
+┌─────────────────┐
+│   Local Dev     │
+├─────────────────┤
 │   Web App       │
 │   Mobile App    │
 │   API Server    │
-│   PostgreSQL    │
-│   Keycloak      │
 └─────────────────┘
 ```
 
