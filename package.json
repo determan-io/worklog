@@ -1,0 +1,73 @@
+{
+  "name": "worklog",
+  "version": "1.0.0",
+  "description": "Multi-tenant time tracking application",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:mobile\"",
+    "dev:api": "cd apps/api && npm run dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev:mobile": "cd apps/mobile && npm run dev",
+    "build": "npm run build:api && npm run build:web && npm run build:mobile",
+    "build:api": "cd apps/api && npm run build",
+    "build:web": "cd apps/web && npm run build",
+    "build:mobile": "cd apps/mobile && npm run build",
+    "test": "npm run test:api && npm run test:web && npm run test:mobile",
+    "test:api": "cd apps/api && npm run test",
+    "test:web": "cd apps/web && npm run test",
+    "test:mobile": "cd apps/mobile && npm run test",
+    "lint": "npm run lint:api && npm run lint:web && npm run lint:mobile",
+    "lint:api": "cd apps/api && npm run lint",
+    "lint:web": "cd apps/web && npm run lint",
+    "lint:mobile": "cd apps/mobile && npm run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "install:all": "npm install && npm run install:api && npm run install:web && npm run install:mobile",
+    "install:api": "cd apps/api && npm install",
+    "install:web": "cd apps/web && npm install",
+    "install:mobile": "cd apps/mobile && npm install",
+    "db:migrate": "cd apps/api && npm run db:migrate",
+    "db:generate": "cd apps/api && npm run db:generate",
+    "db:seed": "cd apps/api && npm run db:seed",
+    "db:reset": "cd apps/api && npm run db:reset",
+    "docs:generate": "cd apps/api && npm run docs:generate",
+    "docs:serve": "cd apps/api && npm run docs:serve",
+    "client:generate": "cd packages/api-client && npm run generate",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.2.5",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "time-tracking",
+    "multi-tenant",
+    "react",
+    "react-native",
+    "nodejs",
+    "typescript"
+  ],
+  "author": "WorkLog Team",
+  "license": "MIT"
+}
