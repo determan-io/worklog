@@ -1,0 +1,237 @@
+name: Issue Automation
+
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled]
+  pull_request:
+    types: [opened, edited, labeled, unlabeled, synchronize]
+
+jobs:
+  auto-label:
+    name: Auto-label Issues and PRs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' || github.event_name == 'pull_request'
+
+    steps:
+      - name: Auto-label based on title
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.issue?.title || context.payload.pull_request?.title || '';
+            const labels = [];
+            
+            // Feature detection
+            if (title.toLowerCase().includes('feat:') || title.toLowerCase().includes('feature')) {
+              labels.push('feature');
+            }
+            
+            // Bug detection
+            if (title.toLowerCase().includes('fix:') || title.toLowerCase().includes('bug')) {
+              labels.push('bug');
+            }
+            
+            // Documentation detection
+            if (title.toLowerCase().includes('docs:') || title.toLowerCase().includes('documentation')) {
+              labels.push('documentation');
+            }
+            
+            // Test detection
+            if (title.toLowerCase().includes('test:') || title.toLowerCase().includes('testing')) {
+              labels.push('testing');
+            }
+            
+            // Priority detection
+            if (title.toLowerCase().includes('urgent') || title.toLowerCase().includes('critical')) {
+              labels.push('priority:high');
+            } else if (title.toLowerCase().includes('low priority')) {
+              labels.push('priority:low');
+            } else {
+              labels.push('priority:medium');
+            }
+            
+            // Add labels if any were detected
+            if (labels.length > 0) {
+              const issueNumber = context.payload.issue?.number || context.payload.pull_request?.number;
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                labels: labels
+              });
+            }
+
+  move-to-in-progress:
+    name: Move to In Progress
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+
+    steps:
+      - name: Move linked issues to in-progress
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            
+            // Extract issue numbers from PR body
+            const issueMatches = body.match(/#(\d+)/g);
+            if (issueMatches) {
+              const issueNumbers = issueMatches.map(match => parseInt(match.replace('#', '')));
+              
+              for (const issueNumber of issueNumbers) {
+                // Add in-progress label
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: ['status:in-progress']
+                });
+                
+                // Remove backlog label if present
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    name: 'status:backlog'
+                  });
+                } catch (error) {
+                  // Label might not exist, ignore error
+                }
+              }
+            }
+
+  move-to-review:
+    name: Move to Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
+
+    steps:
+      - name: Move linked issues to review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            
+            // Extract issue numbers from PR body
+            const issueMatches = body.match(/#(\d+)/g);
+            if (issueMatches) {
+              const issueNumbers = issueMatches.map(match => parseInt(match.replace('#', '')));
+              
+              for (const issueNumber of issueNumbers) {
+                // Add review label
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: ['status:review']
+                });
+                
+                // Remove in-progress label if present
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    name: 'status:in-progress'
+                  });
+                } catch (error) {
+                  // Label might not exist, ignore error
+                }
+              }
+            }
+
+  move-to-done:
+    name: Move to Done
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged
+
+    steps:
+      - name: Move linked issues to done
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = pr.body || '';
+            
+            // Extract issue numbers from PR body
+            const issueMatches = body.match(/#(\d+)/g);
+            if (issueMatches) {
+              const issueNumbers = issueMatches.map(match => parseInt(match.replace('#', '')));
+              
+              for (const issueNumber of issueNumbers) {
+                // Add done label
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: ['status:done']
+                });
+                
+                // Remove other status labels
+                const labelsToRemove = ['status:backlog', 'status:planning', 'status:in-progress', 'status:review'];
+                for (const label of labelsToRemove) {
+                  try {
+                    await github.rest.issues.removeLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issueNumber,
+                      name: label
+                    });
+                  } catch (error) {
+                    // Label might not exist, ignore error
+                  }
+                }
+              }
+            }
+
+  assign-reviewers:
+    name: Assign Reviewers
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+
+    steps:
+      - name: Assign reviewers based on labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(label => label.name);
+            
+            // Define reviewer mapping based on labels
+            const reviewerMap = {
+              'feature:auth': ['@determan-io/backend-team'],
+              'feature:api': ['@determan-io/backend-team'],
+              'feature:ui': ['@determan-io/frontend-team'],
+              'feature:mobile': ['@determan-io/mobile-team'],
+              'feature:database': ['@determan-io/backend-team'],
+              'feature:billing': ['@determan-io/backend-team', '@determan-io/frontend-team']
+            };
+            
+            const reviewers = new Set();
+            
+            // Add reviewers based on labels
+            for (const label of labels) {
+              if (reviewerMap[label]) {
+                reviewerMap[label].forEach(reviewer => reviewers.add(reviewer));
+              }
+            }
+            
+            // Add default reviewers if no specific reviewers found
+            if (reviewers.size === 0) {
+              reviewers.add('@determan-io/backend-team');
+            }
+            
+            // Assign reviewers
+            if (reviewers.size > 0) {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                reviewers: Array.from(reviewers)
+              });
+            }
