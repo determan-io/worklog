@@ -246,6 +246,34 @@ async function main() {
 
   console.log('✅ Customers for Org 2 created:', { customer3: customer3.name, customer4: customer4.name });
 
+  // Create 20 additional test customers for Organization 1
+  const testCustomers = [];
+  for (let i = 1; i <= 20; i++) {
+    const customer = await prisma.customer.create({
+      data: {
+        organization_id: organization.uuid,
+        name: `Test Customer ${i}`,
+        email: `customer${i}@worklog.com`,
+        phone: `+1-555-${String(i).padStart(4, '0')}`,
+        address: {
+          street: `${100 + i} Test Street`,
+          city: i % 2 === 0 ? 'San Francisco' : 'New York',
+          state: i % 2 === 0 ? 'CA' : 'NY',
+          zip: i % 2 === 0 ? '94105' : '10001',
+          country: 'USA'
+        },
+        billing_settings: {
+          currency: 'USD',
+          payment_terms: i % 3 === 0 ? 'Net 15' : i % 3 === 1 ? 'Net 30' : 'Net 45',
+          billing_method: i % 2 === 0 ? 'email' : 'portal'
+        },
+        is_active: i % 5 !== 0, // Every 5th customer is inactive
+      }
+    });
+    testCustomers.push(customer);
+  }
+  console.log('✅ Created 20 additional test customers');
+
   // Create SOWs (Statements of Work)
   const sow1 = await prisma.sow.create({
     data: {
@@ -397,6 +425,29 @@ async function main() {
     project4: project4.name, 
     project5: project5.name
   });
+
+  // Create 20 additional test projects for Organization 1
+  const testProjects = [];
+  for (let i = 1; i <= 20; i++) {
+    const project = await prisma.project.create({
+      data: {
+        organization_id: organization.uuid,
+        customer_id: i % 2 === 0 ? customer1.id : customer2.id, // Alternate between customers
+        name: `Test Project ${i}`,
+        description: `Description for test project ${i}`,
+        billing_model: i % 3 === 0 ? 'timesheet' : 'task-based',
+        status: i % 5 === 0 ? 'inactive' : 'active',
+        start_date: new Date(`2024-01-${String(i % 28 + 1).padStart(2, '0')}`),
+        end_date: new Date(`2024-06-${String(i % 28 + 1).padStart(2, '0')}`),
+        budget_hours: (i * 10).toFixed(2),
+        hourly_rate: (100 + i * 5).toFixed(2),
+        is_billable: i % 4 !== 0,
+        is_active: i % 5 !== 0,
+      }
+    });
+    testProjects.push(project);
+  }
+  console.log('✅ Created 20 additional test projects');
 
   // Create Time Entries (for task-based billing)
   const timeEntry1 = await prisma.timeEntry.create({
@@ -576,6 +627,108 @@ async function main() {
   });
 
   console.log('✅ Approval Workflow created:', approvalWorkflow.name);
+
+  // Add extensive time entries for the past 2 years and future year for customer1 (Enterprise Corp)
+  console.log('\n⏱️ Creating extensive time entries for customer1 (past 2 years + next year)...');
+  
+  const twoYearsAgo = new Date();
+  twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+  const oneYearAhead = new Date();
+  oneYearAhead.setFullYear(oneYearAhead.getFullYear() + 1);
+  
+  // Get customer1's projects
+  const customer1Projects = await prisma.project.findMany({
+    where: {
+      customer_id: customer1.id
+    }
+  });
+  
+  const weeklyProject = customer1Projects.find(p => p.billing_model === 'timesheet');
+  const taskProject = customer1Projects.find(p => p.billing_model === 'task-based');
+  
+  console.log(`Found ${customer1Projects.length} projects for customer1`);
+  console.log(`Weekly project:`, weeklyProject?.name, weeklyProject?.id);
+  console.log(`Task project:`, taskProject?.name, taskProject?.id);
+  
+  if (weeklyProject && taskProject) {
+    // Generate weekly timesheet entries for the weekly project
+    const weeklyEntriesCreated = [];
+    let currentDate = new Date(twoYearsAgo);
+    
+    while (currentDate < oneYearAhead) {
+      // Get Monday of the week
+      const dayOfWeek = currentDate.getDay();
+      const monday = new Date(currentDate);
+      monday.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      
+      // Create weekly timesheet entries (Mon-Fri, ~8 hours per day, variable)
+      for (let i = 0; i < 5; i++) {
+        const entryDate = new Date(monday);
+        entryDate.setDate(monday.getDate() + i);
+        
+        // Skip if entry date is beyond one year ahead
+        if (entryDate > oneYearAhead) continue;
+        
+        // Randomize hours between 6-10 hours per day
+        const hours = 6 + Math.random() * 4;
+        const isBillable = Math.random() > 0.2; // 80% billable
+        
+        const timeEntry = await prisma.timeEntry.create({
+          data: {
+            organization_id: organization.id,
+            project_id: weeklyProject.id,   // Use project id (which is a UUID string)
+            user_id: employeeUser.id,
+            entry_date: entryDate,
+            duration_hours: parseFloat(hours.toFixed(2)),
+            task_description: `Weekly timesheet work - ${entryDate.toLocaleDateString('en-US', { weekday: 'long' })}`,
+            is_billable: isBillable,
+            status: i % 3 === 0 ? 'submitted' : i % 3 === 1 ? 'approved' : 'draft'
+          }
+        });
+        weeklyEntriesCreated.push(timeEntry);
+      }
+      
+      // Move to next Monday
+      currentDate.setDate(currentDate.getDate() + 7);
+    }
+    
+    console.log(`✅ Created ${weeklyEntriesCreated.length} weekly timesheet entries`);
+    
+    // Generate task-based entries for the task project (sparser, once every few days)
+    const taskEntriesCreated = [];
+    currentDate = new Date(twoYearsAgo);
+    
+    while (currentDate < oneYearAhead) {
+      // Create a task entry roughly every 3 days
+      const hours = 2 + Math.random() * 6; // 2-8 hours per task
+      const isBillable = Math.random() > 0.15; // 85% billable
+      
+      const timeEntry = await prisma.timeEntry.create({
+        data: {
+          organization_id: organization.id,
+          project_id: taskProject.id,      // Use project id (which is a UUID string)
+          user_id: employeeUser.id,
+          entry_date: currentDate,
+          duration_hours: parseFloat(hours.toFixed(2)),
+          task_description: `Task-based development work - Task #${Math.floor(Math.random() * 1000)}`,
+          is_billable: isBillable,
+          status: Math.random() > 0.7 ? 'submitted' : 'approved'
+        }
+      });
+      taskEntriesCreated.push(timeEntry);
+      
+      // Move to next entry (3 days later, randomize between 2-4 days)
+      const daysToNext = 2 + Math.random() * 2;
+      currentDate.setDate(currentDate.getDate() + daysToNext);
+      
+      if (currentDate > oneYearAhead) break;
+    }
+    
+    console.log(`✅ Created ${taskEntriesCreated.length} task-based time entries`);
+    console.log(`✅ Total time entries created: ${weeklyEntriesCreated.length + taskEntriesCreated.length}`);
+  } else {
+    console.log('⚠️ Could not find projects with different billing models for customer1');
+  }
 
   // Create Project Memberships
   console.log('\n👥 Creating Project Memberships...');

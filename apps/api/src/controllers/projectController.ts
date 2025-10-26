@@ -41,10 +41,13 @@ export class ProjectController {
       });
 
       // Filter by user's project memberships (only show projects they're assigned to)
+      // If user has memberships, filter by them. Otherwise, show all projects in the organization.
       const userProjectIds = userMemberships.map(m => m.project_id);
-      where.id = {
-        in: userProjectIds
-      };
+      if (userProjectIds.length > 0) {
+        where.id = {
+          in: userProjectIds
+        };
+      }
 
       if (customer_id) {
         where.customer_id = customer_id as string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjects } from '../hooks/useApi';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -6,7 +6,9 @@ import LoadingSpinner from '../components/LoadingSpinner';
 export default function ProjectsPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectsPerPage, setProjectsPerPage] = useState(10);
 
   const { data: projectsData, isLoading } = useProjects({ is_active: 'true' });
   const projects = projectsData?.data || [];
@@ -26,9 +28,20 @@ export default function ProjectsPage() {
     return matchesSearch && matchesStatus;
   });
 
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+  const startIndex = (currentPage - 1) * projectsPerPage;
+  const endIndex = startIndex + projectsPerPage;
+  const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+
   const handleEditProject = (project: any) => {
     navigate(`/projects/edit/${project.id}`);
   };
+
+  // Reset to page 1 when filters or page size change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, projectsPerPage]);
 
   if (isLoading) {
     return (
@@ -96,9 +109,9 @@ export default function ProjectsPage() {
           <div className="flex items-center justify-center py-8">
             <LoadingSpinner />
           </div>
-        ) : filteredProjects.length > 0 ? (
+        ) : paginatedProjects.length > 0 ? (
           <div className="space-y-3">
-            {filteredProjects.map((project: any) => (
+            {paginatedProjects.map((project: any) => (
               <div key={project.id} className="border rounded-lg p-4 hover:bg-gray-50">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -136,6 +149,46 @@ export default function ProjectsPage() {
           <div className="text-center text-gray-500 py-8">
             <p>No projects yet</p>
             <p className="text-sm mt-1">Create your first project to get started</p>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {filteredProjects.length > 0 && (
+          <div className="flex items-center justify-between mt-6 pt-4 border-t">
+            <div className="text-sm text-gray-600">
+              Showing {startIndex + 1} to {Math.min(endIndex, filteredProjects.length)} of {filteredProjects.length} projects
+            </div>
+            <div className="flex items-center space-x-3">
+              <select
+                value={projectsPerPage}
+                onChange={(e) => setProjectsPerPage(Number(e.target.value))}
+                className="input text-sm w-24"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="btn-secondary btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="btn-secondary btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

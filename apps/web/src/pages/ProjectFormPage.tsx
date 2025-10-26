@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCreateProject, useUpdateProject, useProjects, useCustomers } from '../hooks/useApi';
 import { validateProject } from '../schemas/projectSchema';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 export default function ProjectFormPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const isEditMode = !!id;
   
   const { data: customersData, isLoading: customersLoading } = useCustomers();
@@ -25,7 +26,7 @@ export default function ProjectFormPage() {
   
   const [errors, setErrors] = useState<any>({});
 
-  // Load project data in edit mode
+  // Load project data in edit mode or pre-populate customer from query param
   useEffect(() => {
     if (isEditMode && projectsData?.data && id) {
       const foundProject = projectsData.data.find((p: any) => p.id === id);
@@ -39,8 +40,14 @@ export default function ProjectFormPage() {
           is_active: foundProject.is_active ?? true
         });
       }
+    } else if (!isEditMode) {
+      // Pre-populate customer if coming from customer page
+      const customerParam = searchParams.get('customer');
+      if (customerParam) {
+        setProject(prev => ({ ...prev, customer_id: customerParam }));
+      }
     }
-  }, [projectsData, id, isEditMode]);
+  }, [projectsData, id, isEditMode, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

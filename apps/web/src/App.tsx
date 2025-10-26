@@ -8,6 +8,7 @@ import DashboardPage from './pages/DashboardPage';
 import TimeTrackingPage from './pages/TimeTrackingPage';
 import ProjectsPage from './pages/ProjectsPage';
 import CustomersPage from './pages/CustomersPage';
+import CustomerDetailPage from './pages/CustomerDetailPage';
 import CustomerFormPage from './pages/CustomerFormPage';
 import ProjectFormPage from './pages/ProjectFormPage';
 import TimeEntryFormPage from './pages/TimeEntryFormPage';
@@ -64,6 +65,7 @@ function App() {
         <Route path="/projects/create" element={<ProjectFormPage />} />
         <Route path="/projects/edit/:id" element={<ProjectFormPage />} />
         <Route path="/customers" element={<CustomersPage />} />
+        <Route path="/customers/detail/:id" element={<CustomerDetailPage />} />
         <Route path="/customers/create" element={<CustomerFormPage />} />
         <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
         <Route path="/users" element={<UsersPage />} />

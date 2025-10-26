@@ -39,7 +39,17 @@ export class CustomerController {
                 name: true,
                 status: true,
                 is_active: true,
-                billing_model: true
+                billing_model: true,
+                description: true,
+                time_entries: {
+                  select: {
+                    id: true,
+                    entry_date: true,
+                    duration_hours: true,
+                    is_billable: true,
+                    status: true
+                  }
+                }
               }
             },
             sows: {
