@@ -432,38 +432,54 @@ export class TimeEntryService {
 
 ### Frontend Development
 
+**Recent Updates (January 2025):**
+- ✅ **Customer Management**: Complete CRUD operations with search, filtering, and active/inactive status management
+- ✅ **Project Management**: Full CRUD with active/inactive status, customer dropdown selection, search functionality, and **billing model selection** (Task-Based vs Weekly Timesheet)
+- ✅ **Billing Models**: Projects now support two billing models - Task-Based (multiple entries per day) and Weekly Timesheet (weekly timecards)
+- ✅ **Time Tracking**: Manual time entry only (timer functionality removed per requirements), with Edit/Delete buttons for entry management
+- ✅ **UI Consistency**: Standardized button layouts, forms, and styling across customer, project, and time tracking pages
+- ✅ **Form Validation**: Comprehensive Zod validation for customer and project forms with proper error handling
+- ✅ **Search & Filter**: Implemented across customer and project pages with status filtering
+- ✅ **Active/Inactive Management**: Customers and projects now support active/inactive status with UI controls
+
 #### Component Example
 ```typescript
-interface TimerProps {
-  project: Project;
-  onStart: (projectId: string) => void;
-  onStop: (entryId: string) => void;
+interface CustomerFormProps {
+  customer?: Customer;
+  onSubmit: (data: CustomerFormData) => void;
+  onCancel: () => void;
 }
 
-export const Timer: React.FC<TimerProps> = ({ project, onStart, onStop }) => {
-  const [isRunning, setIsRunning] = useState(false);
-  const [duration, setDuration] = useState(0);
+export const CustomerForm: React.FC<CustomerFormProps> = ({ customer, onSubmit, onCancel }) => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
-  const handleStart = () => {
-    onStart(project.id);
-    setIsRunning(true);
-  };
-  
-  const handleStop = () => {
-    onStop(activeEntryId);
-    setIsRunning(false);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = validateCustomer(formData);
+    if (result.success) {
+      onSubmit(result.data);
+    } else {
+      setErrors(result.errors);
+    }
   };
   
   return (
-    <div className="timer-container">
-      <h3>{project.name}</h3>
-      <div className="timer-display">
-        {formatDuration(duration)}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Customer name, email, phone, address fields */}
+      <div className="flex items-center space-x-2">
+        <input 
+          type="checkbox" 
+          id="is_active" 
+          checked={formData.is_active}
+          onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+        />
+        <label htmlFor="is_active">Active Customer</label>
       </div>
-      <button onClick={isRunning ? handleStop : handleStart}>
-        {isRunning ? 'Stop' : 'Start'}
-      </button>
-    </div>
+      <div className="flex justify-end space-x-3">
+        <button type="button" onClick={onCancel}>Cancel</button>
+        <button type="submit">Submit</button>
+      </div>
+    </form>
   );
 };
 ```

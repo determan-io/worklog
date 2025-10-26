@@ -10,74 +10,79 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Core Tables
+// Core Tables with Dual-ID System
+// Integer 'id' for internal relations, UUID for external API access
 
 model Organization {
-  id                String   @id @default(uuid())
+  id                Int      @id @default(autoincrement())
+  uuid              String   @unique @default(uuid())
   name              String
   domain            String?  @unique
   settings          Json     @default("{}")
   subscription_plan String   @default("free")
   is_active         Boolean  @default(true)
-  created_at        DateTime @default(now()) @map("created_at")
-  updated_at        DateTime @updatedAt @map("updated_at")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   // Relations
-  users                    User[]
-  customers                Customer[]
-  sows                     Sow[]
-  projects                 Project[]
-  time_entries             TimeEntry[]
-  timesheets               Timesheet[]
-  timesheet_entries        TimesheetEntry[]
+  users                User[]
+  customers            Customer[]
+  sows                 Sow[]
+  projects             Project[]
+  project_memberships   ProjectMembership[]
+  time_entries         TimeEntry[]
+  timesheets           Timesheet[]
+  timesheet_entries    TimesheetEntry[]
   project_approval_workflows ProjectApprovalWorkflow[]
-  approval_requests        ApprovalRequest[]
-  billing_batches          BillingBatch[]
-  billing_history          BillingHistory[]
+  approval_requests    ApprovalRequest[]
+  billing_batches      BillingBatch[]
+  billing_history      BillingHistory[]
 
   @@map("organizations")
 }
 
 model User {
-  id             String    @id @default(uuid())
-  organization_id String
-  keycloak_id    String    @unique
+  id             Int      @id @default(autoincrement())
+  uuid           String   @unique @default(uuid())
+  organization_id Int     @map("organization_id")
+  keycloak_id    String   @unique
   email          String
   first_name     String?
   last_name      String?
-  role           String    @default("employee") // admin, manager, employee, client
-  is_active      Boolean   @default(true)
+  role           String   // 'admin', 'manager', 'employee', 'client'
+  is_active      Boolean  @default(true)
   last_login_at  DateTime?
-  created_at     DateTime  @default(now()) @map("created_at")
-  updated_at     DateTime  @updatedAt @map("updated_at")
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   // Relations
-  organization           Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  time_entries           TimeEntry[]
-  timesheets             Timesheet[]
-  project_members        ProjectMember[]
-  approval_requests      ApprovalRequest[]
-  approval_actions       ApprovalAction[]
-  billing_batches        BillingBatch[]
-  billing_history        BillingHistory[]
+  organization                    Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  time_entries                    TimeEntry[]
+  timesheets                     Timesheet[]
+  project_memberships             ProjectMembership[]
+  approval_requests_submitted    ApprovalRequest[] @relation("ApprovalRequestSubmittedBy")
+  approval_requests_approved     ApprovalRequest[] @relation("ApprovalRequestApprovedBy")
+  approval_actions_user           ApprovalAction[] @relation("ApprovalActionUser")
+  billing_batches_created         BillingBatch[] @relation("BillingBatchCreatedBy")
+  billing_history_performed       BillingHistory[] @relation("BillingHistoryPerformedBy")
 
   @@map("users")
 }
 
 model Customer {
-  id               String   @id @default(uuid())
-  organization_id  String
-  name             String
-  email            String?
-  phone            String?
-  address          Json     @default("{}")
-  billing_settings Json     @default("{}")
-  is_active        Boolean  @default(true)
-  created_at       DateTime @default(now()) @map("created_at")
-  updated_at       DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  organization_id String   @map("organization_id")
+  name            String
+  email           String?
+  phone           String?
+  address         Json     @default("{}")
+  billing_settings Json    @default("{}")
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organization_id], references: [uuid], onDelete: Cascade)
   sows         Sow[]
   projects     Project[]
 
@@ -85,24 +90,24 @@ model Customer {
 }
 
 model Sow {
-  id               String   @id @default(uuid())
-  organization_id  String
-  customer_id      String
-  title            String
-  description      String?
-  scope_of_work    String?
-  deliverables     Json     @default("[]")
-  billing_terms    Json     @default("{}")
-  hourly_rate      Decimal? @db.Decimal(10, 2)
-  total_budget     Decimal? @db.Decimal(12, 2)
-  start_date       DateTime?
-  end_date         DateTime?
-  status           String   @default("draft") // draft, active, completed, cancelled
-  created_at       DateTime @default(now()) @map("created_at")
-  updated_at       DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  organization_id String   @map("organization_id")
+  customer_id     String   @map("customer_id")
+  title           String
+  description     String?
+  scope_of_work   String?
+  deliverables    Json     @default("[]")
+  billing_terms   Json     @default("{}")
+  hourly_rate     Decimal? @db.Decimal(10, 2)
+  total_budget    Decimal? @db.Decimal(12, 2)
+  start_date      DateTime? @db.Date
+  end_date        DateTime? @db.Date
+  status          String   @default("draft") // 'draft', 'active', 'completed', 'cancelled'
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organization_id], references: [uuid], onDelete: Cascade)
   customer     Customer     @relation(fields: [customer_id], references: [id], onDelete: Cascade)
   projects     Project[]
 
@@ -110,97 +115,103 @@ model Sow {
 }
 
 model Project {
-  id               String   @id @default(uuid())
-  organization_id  String
-  customer_id      String
-  sow_id           String?
-  name             String
-  description      String?
-  billing_model    String   // timesheet, task-based
-  status           String   @default("active") // planning, active, on-hold, completed, cancelled
-  start_date       DateTime?
-  end_date         DateTime?
-  budget_hours     Decimal? @db.Decimal(10, 2)
-  hourly_rate      Decimal? @db.Decimal(10, 2)
-  is_billable      Boolean  @default(true)
-  created_at       DateTime @default(now()) @map("created_at")
-  updated_at       DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  organization_id String   @map("organization_id")
+  customer_id     String   @map("customer_id")
+  sow_id          String?  @map("sow_id")
+  name            String
+  description     String?
+  billing_model   String   // 'timesheet', 'task-based'
+  status          String   @default("active") // 'planning', 'active', 'on-hold', 'completed', 'cancelled'
+  is_active       Boolean  @default(true)
+  start_date      DateTime? @db.Date
+  end_date        DateTime? @db.Date
+  budget_hours    Decimal? @db.Decimal(10, 2)
+  hourly_rate     Decimal? @db.Decimal(10, 2)
+  is_billable     Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
-  organization           Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  customer               Customer     @relation(fields: [customer_id], references: [id], onDelete: Cascade)
-  sow                    Sow?         @relation(fields: [sow_id], references: [id], onDelete: SetNull)
-  time_entries           TimeEntry[]
-  timesheet_entries      TimesheetEntry[]
-  project_members        ProjectMember[]
-  project_approval_workflows ProjectApprovalWorkflow[]
-  billing_batches        BillingBatch[]
+  organization                    Organization @relation(fields: [organization_id], references: [uuid], onDelete: Cascade)
+  customer                        Customer     @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  sow                             Sow?        @relation(fields: [sow_id], references: [id], onDelete: SetNull)
+  time_entries                    TimeEntry[]
+  timesheet_entries               TimesheetEntry[]
+  project_approval_workflows      ProjectApprovalWorkflow[]
+  billing_batches                 BillingBatch[]
+  memberships                     ProjectMembership[]
 
   @@map("projects")
 }
 
-model ProjectMember {
-  id         String @id @default(uuid())
-  project_id String
-  user_id    String
-  role       String @default("member") // member, lead, viewer
-  created_at DateTime @default(now()) @map("created_at")
-
-  // Relations
-  project Project @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@unique([project_id, user_id])
-  @@map("project_members")
-}
-
-model TimeEntry {
-  id                String    @id @default(uuid())
-  organization_id   String
-  user_id           String
-  project_id        String
-  task_description  String?
-  start_time        DateTime?
-  end_time          DateTime?
-  duration_minutes  Int?      // Generated column in DB
-  is_timer_active   Boolean   @default(false)
-  is_billable       Boolean   @default(true)
-  hourly_rate       Decimal?  @db.Decimal(10, 2)
-  notes             String?
-  status            String    @default("draft") // draft, submitted, approved, rejected
-  created_at        DateTime  @default(now()) @map("created_at")
-  updated_at        DateTime  @updatedAt @map("updated_at")
+model ProjectMembership {
+  id                Int      @id @default(autoincrement())
+  uuid              String   @unique @default(uuid())
+  organization_id   Int      @map("organization_id")
+  project_id        String   @map("project_id")
+  user_id           Int      @map("user_id")
+  role             String   @default("member") // 'lead', 'member', 'viewer'
+  hourly_rate       Decimal? @db.Decimal(10, 2)
+  joined_at         DateTime  @default(now())
+  left_at           DateTime?
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   // Relations
   organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
   project      Project      @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  billing_items BillingItem[]
-  billing_history BillingHistory[]
+  user         User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([project_id, user_id])
+  @@map("project_memberships")
+}
+
+model TimeEntry {
+  id                Int      @id @default(autoincrement())
+  uuid              String   @unique @default(uuid())
+  organization_id   Int      @map("organization_id")
+  user_id           Int      @map("user_id")
+  project_id        String   @map("project_id")
+  task_description  String?
+  entry_date        DateTime @db.Date
+  duration_hours    Decimal  @db.Decimal(10, 4) // e.g., 1.25 hours = 1 hour 15 min
+  is_billable       Boolean  @default(true)
+  hourly_rate       Decimal? @db.Decimal(10, 2)
+  notes             String?
+  status            String   @default("draft") // 'draft', 'submitted', 'approved', 'rejected'
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relations
+  organization     Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user             User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  project          Project      @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  billing_items    BillingItem[]
+  billing_history  BillingHistory[]
 
   @@map("time_entries")
 }
 
-// Timesheet Tables
-
 model Timesheet {
-  id               String   @id @default(uuid())
-  organization_id  String
-  user_id          String
-  week_start_date  DateTime
-  week_end_date    DateTime
-  status           String   @default("draft") // draft, submitted, approved, rejected
-  total_hours      Decimal  @default(0) @db.Decimal(8, 2)
-  notes            String?
-  submitted_at     DateTime?
-  approved_at      DateTime?
-  approved_by      String?
-  created_at       DateTime @default(now()) @map("created_at")
-  updated_at       DateTime @updatedAt @map("updated_at")
+  id              String   @id @default(uuid())
+  organization_id String   @map("organization_id")
+  user_id         String   @map("user_id")
+  week_start_date DateTime @db.Date
+  week_end_date   DateTime @db.Date
+  status          String   @default("draft") // 'draft', 'submitted', 'approved', 'rejected'
+  total_hours     Decimal  @default(0) @db.Decimal(8, 2)
+  notes           String?
+  submitted_at    DateTime?
+  approved_at     DateTime?
+  approved_by     String?  @map("approved_by")
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
-  organization      Organization      @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  user              User              @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  organization      Organization      @relation(fields: [organization_id], references: [uuid], onDelete: Cascade)
+  user              User              @relation(fields: [user_id], references: [uuid], onDelete: Cascade)
   timesheet_entries TimesheetEntry[]
   billing_items     BillingItem[]
   billing_history   BillingHistory[]
@@ -210,24 +221,24 @@ model Timesheet {
 }
 
 model TimesheetEntry {
-  id               String   @id @default(uuid())
-  organization_id  String
-  timesheet_id     String
-  project_id       String
-  entry_date       DateTime
-  hours_monday     Decimal  @default(0) @db.Decimal(4, 2)
-  hours_tuesday    Decimal  @default(0) @db.Decimal(4, 2)
-  hours_wednesday  Decimal  @default(0) @db.Decimal(4, 2)
-  hours_thursday   Decimal  @default(0) @db.Decimal(4, 2)
-  hours_friday     Decimal  @default(0) @db.Decimal(4, 2)
-  hours_saturday   Decimal  @default(0) @db.Decimal(4, 2)
-  hours_sunday     Decimal  @default(0) @db.Decimal(4, 2)
+  id              String   @id @default(uuid())
+  organization_id String   @map("organization_id")
+  timesheet_id    String   @map("timesheet_id")
+  project_id      String   @map("project_id")
+  entry_date      DateTime @db.Date
+  hours_monday    Decimal  @default(0) @db.Decimal(4, 2)
+  hours_tuesday   Decimal  @default(0) @db.Decimal(4, 2)
+  hours_wednesday Decimal  @default(0) @db.Decimal(4, 2)
+  hours_thursday  Decimal  @default(0) @db.Decimal(4, 2)
+  hours_friday    Decimal  @default(0) @db.Decimal(4, 2)
+  hours_saturday  Decimal  @default(0) @db.Decimal(4, 2)
+  hours_sunday    Decimal  @default(0) @db.Decimal(4, 2)
   task_description String?
-  created_at       DateTime @default(now()) @map("created_at")
-  updated_at       DateTime @updatedAt @map("updated_at")
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
-  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organization_id], references: [uuid], onDelete: Cascade)
   timesheet    Timesheet    @relation(fields: [timesheet_id], references: [id], onDelete: Cascade)
   project      Project      @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
@@ -237,187 +248,196 @@ model TimesheetEntry {
 // Approval Process Tables
 
 model ProjectApprovalWorkflow {
-  id            String   @id @default(uuid())
-  organization_id String
-  project_id    String
-  name          String
-  description   String?
-  is_active     Boolean  @default(true)
-  created_at    DateTime @default(now()) @map("created_at")
-  updated_at    DateTime @updatedAt @map("updated_at")
+  id              Int      @id @default(autoincrement())
+  uuid            String   @unique @default(uuid())
+  organization_id Int      @map("organization_id")
+  project_id      String   @map("project_id")
+  name            String
+  description     String?
+  is_active       Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
-  organization      Organization    @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  project           Project         @relation(fields: [project_id], references: [id], onDelete: Cascade)
-  approval_steps    ApprovalStep[]
-  approval_requests ApprovalRequest[]
+  organization       Organization      @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  project            Project           @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  approval_steps     ApprovalStep[]
+  approval_requests  ApprovalRequest[]
 
   @@map("project_approval_workflows")
 }
 
 model ApprovalStep {
-  id                        String   @id @default(uuid())
-  workflow_id               String
-  step_order                Int
-  step_name                 String
-  approver_type             String   // user, email
-  approver_user_id          String?
-  approver_email            String?
-  approver_name             String?
-  is_required               Boolean  @default(true)
-  auto_approve_after_days   Int?
-  created_at                DateTime @default(now()) @map("created_at")
-  updated_at                DateTime @updatedAt @map("updated_at")
+  id                    Int      @id @default(autoincrement())
+  uuid                  String   @unique @default(uuid())
+  workflow_id           Int      @map("workflow_id")
+  step_order            Int
+  step_name             String
+  approver_type         String   // 'user', 'email'
+  approver_user_id      Int?     @map("approver_user_id")
+  approver_email        String?
+  approver_name         String?
+  is_required           Boolean  @default(true)
+  auto_approve_after_days Int?
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
 
   // Relations
-  workflow          ProjectApprovalWorkflow @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
-  approval_requests ApprovalRequest[]
-  approval_actions  ApprovalAction[]
-  email_tokens      EmailApprovalToken[]
+  workflow           ProjectApprovalWorkflow @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+  approval_requests  ApprovalRequest[]
+  approval_actions   ApprovalAction[]
+  email_approval_tokens EmailApprovalToken[]
 
   @@map("approval_steps")
 }
 
 model ApprovalRequest {
-  id               String   @id @default(uuid())
-  organization_id  String
-  request_type     String   // timesheet, time_entry, project
-  request_id       String
-  workflow_id      String
-  current_step_id  String?
-  status           String   @default("pending") // pending, approved, rejected, expired
-  submitted_by     String
-  submitted_at     DateTime @default(now()) @map("submitted_at")
-  completed_at     DateTime?
-  expires_at       DateTime?
-  created_at       DateTime @default(now()) @map("created_at")
-  updated_at       DateTime @updatedAt @map("updated_at")
+  id              Int      @id @default(autoincrement())
+  uuid            String   @unique @default(uuid())
+  organization_id Int      @map("organization_id")
+  request_type    String   // 'timesheet', 'time_entry', 'project'
+  request_id      Int      @map("request_id")
+  workflow_id     Int      @map("workflow_id")
+  current_step_id Int?     @map("current_step_id")
+  status          String   @default("pending") // 'pending', 'approved', 'rejected', 'expired'
+  submitted_by    Int      @map("submitted_by")
+  approved_by     Int?     @map("approved_by")
+  submitted_at    DateTime @default(now())
+  completed_at    DateTime?
+  expires_at      DateTime?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
-  organization   Organization    @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  workflow       ProjectApprovalWorkflow @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
-  current_step   ApprovalStep?   @relation(fields: [current_step_id], references: [id], onDelete: SetNull)
-  submitted_user User            @relation(fields: [submitted_by], references: [id], onDelete: Cascade)
-  approval_actions ApprovalAction[]
-  email_tokens   EmailApprovalToken[]
+  organization       Organization      @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  workflow           ProjectApprovalWorkflow @relation(fields: [workflow_id], references: [id], onDelete: Cascade)
+  current_step       ApprovalStep?     @relation(fields: [current_step_id], references: [id], onDelete: SetNull)
+  submitted_by_user   User              @relation("ApprovalRequestSubmittedBy", fields: [submitted_by], references: [id], onDelete: Cascade)
+  approved_by_user    User?             @relation("ApprovalRequestApprovedBy", fields: [approved_by], references: [id], onDelete: SetNull)
+  approval_actions    ApprovalAction[]
+  email_approval_tokens EmailApprovalToken[]
 
   @@map("approval_requests")
 }
 
 model ApprovalAction {
-  id                String   @id @default(uuid())
-  approval_request_id String
-  step_id           String
-  action            String   // approve, reject, request_changes
-  approver_type     String   // user, email
-  approver_user_id  String?
-  approver_email    String?
-  approver_name     String?
-  comments          String?
-  approved_at       DateTime @default(now()) @map("approved_at")
-  created_at        DateTime @default(now()) @map("created_at")
+  id                    Int      @id @default(autoincrement())
+  uuid                  String   @unique @default(uuid())
+  approval_request_id   Int      @map("approval_request_id")
+  step_id               Int      @map("step_id")
+  action                String   // 'approve', 'reject', 'request_changes'
+  approver_type         String   // 'user', 'email'
+  approver_user_id      Int?     @map("approver_user_id")
+  approver_email        String?
+  approver_name         String?
+  comments              String?
+  approved_at           DateTime @default(now())
+  created_at            DateTime @default(now())
 
   // Relations
   approval_request ApprovalRequest @relation(fields: [approval_request_id], references: [id], onDelete: Cascade)
-  step             ApprovalStep    @relation(fields: [step_id], references: [id], onDelete: Cascade)
-  approver_user    User?           @relation(fields: [approver_user_id], references: [id], onDelete: SetNull)
+  step             ApprovalStep     @relation(fields: [step_id], references: [id], onDelete: Cascade)
+  approver_user    User?            @relation("ApprovalActionUser", fields: [approver_user_id], references: [id], onDelete: SetNull)
 
   @@map("approval_actions")
 }
 
 model EmailApprovalToken {
-  id                String    @id @default(uuid())
-  token             String    @unique @default(uuid())
-  approval_request_id String
-  step_id           String
+  id                Int      @id @default(autoincrement())
+  token             String   @unique @default(uuid())
+  approval_request_id Int    @map("approval_request_id")
+  step_id           Int      @map("step_id")
   email             String
   expires_at        DateTime
   used_at           DateTime?
-  created_at        DateTime  @default(now()) @map("created_at")
+  created_at        DateTime @default(now())
 
   // Relations
   approval_request ApprovalRequest @relation(fields: [approval_request_id], references: [id], onDelete: Cascade)
-  step             ApprovalStep    @relation(fields: [step_id], references: [id], onDelete: Cascade)
+  step             ApprovalStep     @relation(fields: [step_id], references: [id], onDelete: Cascade)
 
   @@map("email_approval_tokens")
 }
 
-// Billing Tables
+// Billing Tracking Tables
 
 model BillingBatch {
-  id                      String   @id @default(uuid())
-  organization_id         String
-  project_id              String?
+  id                      Int      @id @default(autoincrement())
+  uuid                    String   @unique @default(uuid())
+  organization_id         Int      @map("organization_id")
+  project_id              String?  @map("project_id")
   batch_name              String
-  batch_type              String   // invoice, export, manual
-  status                  String   @default("draft") // draft, generated, sent, paid, cancelled
+  batch_type              String   // 'invoice', 'export', 'manual'
+  status                  String   @default("draft") // 'draft', 'generated', 'sent', 'paid', 'cancelled'
   total_amount            Decimal  @default(0) @db.Decimal(12, 2)
   total_hours             Decimal  @default(0) @db.Decimal(10, 2)
   currency                String   @default("USD")
   invoice_number          String?
-  invoice_date            DateTime?
-  due_date                DateTime?
+  invoice_date            DateTime? @db.Date
+  due_date                DateTime? @db.Date
   quickbooks_invoice_id   String?
-  quickbooks_sync_status  String   @default("pending") // pending, synced, failed
+  quickbooks_sync_status  String   @default("pending") // 'pending', 'synced', 'failed'
   quickbooks_sync_date    DateTime?
   notes                   String?
-  created_by              String
-  created_at              DateTime @default(now()) @map("created_at")
-  updated_at              DateTime @updatedAt @map("updated_at")
+  created_by              Int      @map("created_by")
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
 
   // Relations
-  organization  Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  project       Project?     @relation(fields: [project_id], references: [id], onDelete: SetNull)
-  created_user  User         @relation(fields: [created_by], references: [id], onDelete: Cascade)
-  billing_items BillingItem[]
-  billing_history BillingHistory[]
+  organization     Organization     @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  project          Project?         @relation(fields: [project_id], references: [id], onDelete: SetNull)
+  created_by_user  User             @relation("BillingBatchCreatedBy", fields: [created_by], references: [id], onDelete: Cascade)
+  billing_items    BillingItem[]
+  billing_history  BillingHistory[]
 
   @@map("billing_batches")
 }
 
 model BillingItem {
-  id               String   @id @default(uuid())
-  billing_batch_id String
-  time_entry_id    String?
-  timesheet_id     String?
-  item_type        String   // time_entry, timesheet, manual
-  description      String
-  quantity         Decimal  @db.Decimal(10, 2)
-  unit_rate        Decimal  @db.Decimal(10, 2)
-  total_amount     Decimal  @db.Decimal(12, 2)
-  is_billable      Boolean  @default(true)
-  billing_date     DateTime
-  created_at       DateTime @default(now()) @map("created_at")
-  updated_at       DateTime @updatedAt @map("updated_at")
+  id                Int      @id @default(autoincrement())
+  uuid              String   @unique @default(uuid())
+  billing_batch_id  Int      @map("billing_batch_id")
+  time_entry_id     Int?     @map("time_entry_id")
+  timesheet_id      String?  @map("timesheet_id")
+  item_type         String   // 'time_entry', 'timesheet', 'manual'
+  description       String
+  quantity          Decimal  @db.Decimal(10, 2)
+  unit_rate         Decimal  @db.Decimal(10, 2)
+  total_amount      Decimal  @db.Decimal(12, 2)
+  is_billable       Boolean  @default(true)
+  billing_date      DateTime @db.Date
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   // Relations
   billing_batch BillingBatch @relation(fields: [billing_batch_id], references: [id], onDelete: Cascade)
-  time_entry    TimeEntry?   @relation(fields: [time_entry_id], references: [id], onDelete: SetNull)
-  timesheet     Timesheet?   @relation(fields: [timesheet_id], references: [id], onDelete: SetNull)
+  time_entry    TimeEntry?    @relation(fields: [time_entry_id], references: [id], onDelete: SetNull)
+  timesheet     Timesheet?    @relation(fields: [timesheet_id], references: [id], onDelete: SetNull)
 
   @@map("billing_items")
 }
 
 model BillingHistory {
-  id               String   @id @default(uuid())
-  organization_id  String
-  time_entry_id    String?
-  timesheet_id     String?
-  billing_batch_id String?
-  action           String   // created, added_to_batch, removed_from_batch, billed, unbilled, paid, refunded
-  previous_status  String?
-  new_status       String?
-  amount           Decimal? @db.Decimal(12, 2)
-  notes            String?
-  performed_by     String
-  performed_at     DateTime @default(now()) @map("performed_at")
+  id                Int      @id @default(autoincrement())
+  uuid              String   @unique @default(uuid())
+  organization_id   Int      @map("organization_id")
+  time_entry_id     Int?     @map("time_entry_id")
+  timesheet_id      String?  @map("timesheet_id")
+  billing_batch_id  Int?     @map("billing_batch_id")
+  action            String   // 'created', 'added_to_batch', 'removed_from_batch', 'billed', 'unbilled', 'paid', 'refunded'
+  previous_status   String?
+  new_status        String?
+  amount            Decimal? @db.Decimal(12, 2)
+  notes             String?
+  performed_by      Int      @map("performed_by")
+  performed_at      DateTime @default(now())
 
   // Relations
-  organization  Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
-  time_entry    TimeEntry?   @relation(fields: [time_entry_id], references: [id], onDelete: SetNull)
-  timesheet     Timesheet?   @relation(fields: [timesheet_id], references: [id], onDelete: SetNull)
-  billing_batch BillingBatch? @relation(fields: [billing_batch_id], references: [id], onDelete: SetNull)
-  performed_user User        @relation(fields: [performed_by], references: [id], onDelete: Cascade)
+  organization     Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  time_entry       TimeEntry?   @relation(fields: [time_entry_id], references: [id], onDelete: SetNull)
+  timesheet        Timesheet?    @relation(fields: [timesheet_id], references: [id], onDelete: SetNull)
+  billing_batch    BillingBatch? @relation(fields: [billing_batch_id], references: [id], onDelete: SetNull)
+  performed_by_user User         @relation("BillingHistoryPerformedBy", fields: [performed_by], references: [id], onDelete: Cascade)
 
   @@map("billing_history")
 }

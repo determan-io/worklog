@@ -12,6 +12,13 @@ This directory contains all development rules and guidelines for the WorkLog pro
 - Code review guidelines
 - Emergency procedures
 
+### [Chrome MCP Validation](./chrome-mcp-validation.md)
+- Browser validation requirements
+- When to validate changes
+- Validation process and commands
+- Common issues and fixes
+- Enforcement guidelines
+
 ### Coming Soon
 - **Code Quality** - TypeScript, React, API development standards
 - **Testing** - Test coverage, testing strategies, test organization

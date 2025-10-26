@@ -1,189 +1,59 @@
 {
   "realm": "worklog",
-  "displayName": "Worklog",
-  "displayNameHtml": "<div class=\"kc-logo-text\"><span>Worklog</span></div>",
   "enabled": true,
-  "sslRequired": "external",
-  "registrationAllowed": true,
-  "registrationEmailAsUsername": true,
-  "rememberMe": true,
-  "verifyEmail": true,
+  "displayName": "WorkLog Application",
+  "registrationAllowed": false,
   "loginWithEmailAllowed": true,
-  "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": true,
-  "editUsernameAllowed": false,
-  "bruteForceProtected": true,
-  "permanentLockout": false,
-  "maxFailureWaitSeconds": 900,
-  "minimumQuickLoginWaitSeconds": 60,
-  "waitIncrementSeconds": 60,
-  "quickLoginCheckMilliSeconds": 1000,
-  "maxDeltaTimeSeconds": 43200,
-  "failureFactor": 30,
-  "defaultRoles": ["offline_access", "uma_authorization"],
+  "verifyEmail": false,
   "requiredCredentials": ["password"],
-  "passwordPolicy": "hashIterations(27500)",
-  "otpPolicyType": "totp",
-  "otpPolicyAlgorithm": "HmacSHA1",
-  "otpPolicyInitialCounter": 0,
-  "otpPolicyDigits": 6,
-  "otpPolicyLookAheadWindow": 1,
-  "otpPolicyPeriod": 30,
-  "otpSupportedApplications": ["FreeOTP", "Google Authenticator"],
-  "browserSecurityHeaders": {
-    "contentSecurityPolicyReportOnly": "",
-    "xContentTypeOptions": "nosniff",
-    "xRobotsTag": "none",
-    "xFrameOptions": "SAMEORIGIN",
-    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
-    "xXSSProtection": "1; mode=block",
-    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
-  },
-  "smtpServer": {},
-  "loginTheme": "keycloak",
-  "accountTheme": "keycloak",
-  "adminTheme": "keycloak",
-  "emailTheme": "keycloak",
-  "internationalizationEnabled": true,
-  "supportedLocales": ["en", "de", "es", "fr", "it", "ja", "pt-BR", "ru", "zh-CN"],
-  "defaultLocale": "en",
-  "ssoSessionIdleTimeout": 1800,
-  "ssoSessionMaxLifespan": 36000,
-  "ssoSessionIdleTimeoutRememberMe": 0,
-  "ssoSessionMaxLifespanRememberMe": 0,
-  "offlineSessionIdleTimeout": 2592000,
-  "offlineSessionMaxLifespanEnabled": false,
-  "offlineSessionMaxLifespan": 5184000,
-  "clientSessionIdleTimeout": 0,
-  "clientSessionMaxLifespan": 0,
-  "clientOfflineSessionIdleTimeout": 0,
-  "clientOfflineSessionMaxLifespan": 0,
-  "accessTokenLifespan": 300,
-  "accessTokenLifespanForImplicitFlow": 900,
-  "accessCodeLifespan": 60,
-  "accessCodeLifespanUserAction": 300,
-  "accessCodeLifespanLogin": 1800,
-  "actionTokenGeneratedByAdminLifespan": 43200,
-  "actionTokenGeneratedByUserLifespan": 300,
-  "oauth2DeviceCodeLifespan": 600,
-  "oauth2DevicePollingInterval": 5,
-  "revokeRefreshToken": false,
-  "refreshTokenMaxReuse": 0,
-  "clients": [
-    {
-      "clientId": "worklog-api",
-      "name": "Worklog API",
-      "description": "Backend API for Worklog application",
-      "enabled": true,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "your-api-client-secret",
-      "redirectUris": ["*"],
-      "webOrigins": ["*"],
-      "notBefore": 0,
-      "bearerOnly": false,
-      "consentRequired": false,
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": true,
-      "publicClient": false,
-      "frontchannelLogout": false,
-      "protocol": "openid-connect",
-      "attributes": {
-        "saml.assertion.signature": "false",
-        "saml.force.post.binding": "false",
-        "saml.multivalued.roles": "false",
-        "saml.encrypt": "false",
-        "saml.server.signature": "false",
-        "saml.server.signature.keyinfo.ext": "false",
-        "exclude.session.state.from.auth.response": "false",
-        "saml_force_name_id_format": "false",
-        "saml.client.signature": "false",
-        "tls.client.certificate.bound.access.tokens": "false",
-        "saml.authnstatement": "false",
-        "display.on.consent.screen": "false",
-        "saml.onetimeuse.condition": "false"
-      },
-      "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
-      "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": ["web-origins", "role_list", "profile", "roles", "email"],
-      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"]
-    },
-    {
-      "clientId": "worklog-web",
-      "name": "Worklog Web",
-      "description": "Frontend web application for Worklog",
-      "enabled": true,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "your-web-client-secret",
-      "redirectUris": ["http://localhost:3000/*", "http://localhost:3000"],
-      "webOrigins": ["http://localhost:3000", "http://localhost:3000/*"],
-      "notBefore": 0,
-      "bearerOnly": false,
-      "consentRequired": false,
-      "standardFlowEnabled": true,
-      "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
-      "publicClient": true,
-      "frontchannelLogout": false,
-      "protocol": "openid-connect",
-      "attributes": {
-        "saml.assertion.signature": "false",
-        "saml.force.post.binding": "false",
-        "saml.multivalued.roles": "false",
-        "saml.encrypt": "false",
-        "saml.server.signature": "false",
-        "saml.server.signature.keyinfo.ext": "false",
-        "exclude.session.state.from.auth.response": "false",
-        "saml_force_name_id_format": "false",
-        "saml.client.signature": "false",
-        "tls.client.certificate.bound.access.tokens": "false",
-        "saml.authnstatement": "false",
-        "display.on.consent.screen": "false",
-        "saml.onetimeuse.condition": "false"
-      },
-      "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
-      "nodeReRegistrationTimeout": -1,
-      "defaultClientScopes": ["web-origins", "role_list", "profile", "roles", "email"],
-      "optionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"]
-    }
-  ],
   "roles": {
     "realm": [
       {
-        "name": "admin",
-        "description": "Administrator role",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "worklog"
+        "name": "user",
+        "description": "Standard user role"
       },
       {
-        "name": "user",
-        "description": "Regular user role",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "worklog"
+        "name": "admin",
+        "description": "Administrator role"
       },
       {
         "name": "manager",
-        "description": "Manager role",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "worklog"
+        "description": "Manager role"
       }
     ]
   },
+  "clients": [
+    {
+      "clientId": "worklog-web",
+      "enabled": true,
+      "publicClient": true,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"],
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true
+    },
+    {
+      "clientId": "worklog-api",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "worklog-api-secret-change-in-production",
+      "redirectUris": ["http://localhost:3001/*"],
+      "webOrigins": ["http://localhost:3001"],
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": true
+    }
+  ],
   "users": [
     {
-      "username": "admin",
-      "email": "admin@worklog.local",
+      "username": "admin@worklog",
+      "enabled": true,
+      "email": "admin@worklog.com",
       "firstName": "Admin",
       "lastName": "User",
-      "enabled": true,
-      "emailVerified": true,
       "credentials": [
         {
           "type": "password",
@@ -191,48 +61,59 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["admin", "user"],
-      "clientRoles": {
-        "worklog-api": ["admin", "user"],
-        "worklog-web": ["admin", "user"]
-      }
+      "realmRoles": ["user", "admin"],
+      "groups": ["/Acme Corp"],
+      "requiredActions": []
     },
     {
-      "username": "user",
-      "email": "user@worklog.local",
-      "firstName": "Regular",
-      "lastName": "User",
+      "username": "manager@worklog",
       "enabled": true,
-      "emailVerified": true,
+      "email": "manager@worklog.com",
+      "firstName": "Manager",
+      "lastName": "User",
       "credentials": [
         {
           "type": "password",
-          "value": "user123",
+          "value": "manager123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user", "manager"],
+      "groups": ["/Acme Corp"],
+      "requiredActions": []
+    },
+    {
+      "username": "employee@worklog",
+      "enabled": true,
+      "email": "employee@worklog.com",
+      "firstName": "Employee",
+      "lastName": "User",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "employee123",
           "temporary": false
         }
       ],
       "realmRoles": ["user"],
-      "clientRoles": {
-        "worklog-api": ["user"],
-        "worklog-web": ["user"]
-      }
+      "groups": ["/TechStart Inc"],
+      "requiredActions": []
     }
   ],
-  "groups": [],
-  "defaultDefaultClientScopes": ["web-origins", "role_list", "profile", "roles", "email"],
-  "defaultOptionalClientScopes": ["address", "phone", "offline_access", "microprofile-jwt"],
-  "browserFlow": "browser",
-  "registrationFlow": "registration",
-  "directGrantFlow": "direct grant",
-  "resetCredentialsFlow": "reset credentials",
-  "clientAuthenticationFlow": "clients",
-  "dockerAuthenticationFlow": "docker auth",
-  "attributes": {
-    "frontendUrl": "",
-    "adminEventsEnabled": "false",
-    "adminEventsDetailsEnabled": "false",
-    "eventsEnabled": "false",
-    "eventsExpiration": "0",
-    "eventsListeners": "jboss-logging"
-  }
+  "groups": [
+    {
+      "name": "Acme Corp",
+      "path": "/Acme Corp",
+      "attributes": {
+        "organization_id": ["acme-corp-uuid"]
+      }
+    },
+    {
+      "name": "TechStart Inc",
+      "path": "/TechStart Inc",
+      "attributes": {
+        "organization_id": ["techstart-inc-uuid"]
+      }
+    }
+  ]
 }

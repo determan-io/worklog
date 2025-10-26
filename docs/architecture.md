@@ -167,7 +167,6 @@ CREATE TABLE time_entries (
   start_time TIMESTAMP,
   end_time TIMESTAMP,
   duration_minutes INTEGER,
-  is_timer_active BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP,
   updated_at TIMESTAMP
 );
@@ -208,8 +207,6 @@ CREATE TABLE time_entries (
 - `GET /time-entries/:id` - Get time entry details
 - `PUT /time-entries/:id` - Update time entry
 - `DELETE /time-entries/:id` - Delete time entry
-- `POST /time-entries/start-timer` - Start timer
-- `POST /time-entries/stop-timer` - Stop timer
 
 ### GraphQL (Future Enhancement)
 ```graphql
@@ -221,8 +218,6 @@ type Query {
 
 type Mutation {
   createTimeEntry(input: TimeEntryInput!): TimeEntry!
-  startTimer(projectId: ID!): TimeEntry!
-  stopTimer(entryId: ID!): TimeEntry!
 }
 ```
 

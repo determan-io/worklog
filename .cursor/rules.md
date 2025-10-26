@@ -28,6 +28,9 @@ This document provides a quick reference to the WorkLog project rules. For compl
 ### [Git Workflow](./.cursor/rules/git.md)
 Complete git workflow rules including branch management, commit conventions, PR process, and GitHub CLI commands.
 
+### [Chrome MCP Validation](./.cursor/rules/chrome-mcp-validation.md)
+Browser validation requirements for all changes. All UI, authentication, and API changes must be validated in a real browser using Chrome MCP tools.
+
 ### Coming Soon
 - **Code Quality** - TypeScript, React, API development standards
 - **Testing** - Test coverage, testing strategies, test organization

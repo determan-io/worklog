@@ -91,6 +91,7 @@ CREATE TABLE customers (
 CREATE INDEX idx_customers_organization_id ON customers(organization_id);
 CREATE INDEX idx_customers_name ON customers(name);
 CREATE INDEX idx_customers_email ON customers(email);
+CREATE INDEX idx_customers_active ON customers(is_active);
 ```
 
 ### SOWs (Statement of Work)
@@ -133,6 +134,7 @@ CREATE TABLE projects (
   description TEXT,
   billing_model VARCHAR(50) NOT NULL CHECK (billing_model IN ('timesheet', 'task-based')),
   status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('planning', 'active', 'on-hold', 'completed', 'cancelled')),
+  is_active BOOLEAN DEFAULT TRUE,
   start_date DATE,
   end_date DATE,
   budget_hours DECIMAL(10,2),
@@ -147,6 +149,7 @@ CREATE INDEX idx_projects_customer_id ON projects(customer_id);
 CREATE INDEX idx_projects_sow_id ON projects(sow_id);
 CREATE INDEX idx_projects_status ON projects(status);
 CREATE INDEX idx_projects_billing_model ON projects(billing_model);
+CREATE INDEX idx_projects_active ON projects(is_active);
 ```
 
 ### Time Entries

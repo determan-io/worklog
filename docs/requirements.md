@@ -25,15 +25,12 @@
 
 ### 3. Time Tracking Features
 - **Flexible Time Entry**:
-  - Start/stop timer functionality
   - Manual time entry
-  - Pause/resume capability
-  - Multiple concurrent timers for different tasks
+  - Time validation (no overlapping entries)
 - **Project Context**:
   - Easy project switching
   - Task categorization
   - Notes and descriptions
-  - Time validation (no overlapping entries)
 
 ### 4. Billing Models
 - **Timesheet Billing**:

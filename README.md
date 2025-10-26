@@ -15,7 +15,9 @@ WorkLog is a comprehensive time tracking solution that enables organizations to:
 ### Multi-Tenant Structure
 - **Organizations**: Top-level tenants with isolated data
 - **Customers**: Belong to organizations, have multiple projects
-- **Projects**: Linked to customers and SOWs (Statement of Work)
+- **Projects**: Linked to customers and SOWs (Statement of Work), support two billing models:
+  - **Task-Based**: Multiple time entries per day, flexible tracking
+  - **Weekly Timesheet**: Weekly timecards with one entry per day
 - **SOWs**: Define project scope, deliverables, and billing terms
 
 ### Billing Models
@@ -67,10 +69,14 @@ worklog/
 
 ### Web Application
 - Organization and user management
-- Project and customer management
+- **Customer Management**: Complete CRUD with search, filtering, and active/inactive status
+- **Project Management**: Full CRUD with customer dropdown, search, and active/inactive status
+- **Time Tracking**: Manual time entry with edit/delete capabilities
 - Advanced reporting and analytics
 - Timesheet management and approval
 - Admin dashboard and settings
+- **Consistent UI**: Standardized forms and buttons across all pages
+- **Form Validation**: Comprehensive Zod validation for data integrity
 
 ### Mobile Application
 - Employee time tracking
@@ -124,6 +130,40 @@ See `.env.example` files in each app directory for required configuration.
 3. Make your changes
 4. Add tests if applicable
 5. Submit a pull request
+
+## Recent Updates (January 2025)
+
+### Customer Management
+- ✅ Complete CRUD operations with Zod validation
+- ✅ Search and filter by active/inactive status
+- ✅ Edit customer information and status
+- ✅ Consistent UI with standardized forms
+
+### Project Management
+- ✅ Full CRUD with customer dropdown selection
+- ✅ **Billing model selection** (Task-Based vs Weekly Timesheet)
+- ✅ Active/inactive status management
+- ✅ Search and filter functionality
+- ✅ Edit project details and status
+- ✅ Improved card/list layout
+
+### Time Tracking
+- ✅ Manual time entry only (timer removed per requirements)
+- ✅ Edit and Delete buttons for time entries
+- ✅ Enhanced button styling and layout
+- ✅ Project and customer context display
+
+### UI/UX Improvements
+- ✅ Consistent button layouts across all pages
+- ✅ Standardized form styling and validation
+- ✅ Enhanced visual hierarchy
+- ✅ Improved user experience
+
+### Database Updates
+- ✅ Added `is_active` field to Customer model
+- ✅ Added `is_active` field to Project model
+- ✅ Updated indexes for performance
+- ✅ Dual-ID system (SERIAL + UUID) for optimal performance
 
 ## License
 

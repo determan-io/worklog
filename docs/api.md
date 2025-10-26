@@ -259,7 +259,6 @@ GET /time-entries?project_id=uuid&start_date=2024-01-01&end_date=2024-01-31
 - `user_id`: Filter by user (admin/manager only)
 - `start_date`: Filter by start date (ISO 8601)
 - `end_date`: Filter by end date (ISO 8601)
-- `is_timer_active`: Filter by active timers
 - `page`: Page number
 - `limit`: Items per page
 
@@ -311,51 +310,6 @@ POST /time-entries
   "end_time": "2024-01-15T17:00:00Z",
   "is_billable": true,
   "notes": "Completed header component"
-}
-```
-
-#### Start Timer
-```http
-POST /time-entries/start-timer
-```
-
-**Request Body:**
-```json
-{
-  "project_id": "uuid",
-  "task_description": "Frontend development"
-}
-```
-
-**Response:**
-```json
-{
-  "data": {
-    "id": "uuid",
-    "project_id": "uuid",
-    "start_time": "2024-01-15T09:00:00Z",
-    "is_timer_active": true,
-    "duration_minutes": 0
-  }
-}
-```
-
-#### Stop Timer
-```http
-POST /time-entries/{id}/stop-timer
-```
-
-**Response:**
-```json
-{
-  "data": {
-    "id": "uuid",
-    "project_id": "uuid",
-    "start_time": "2024-01-15T09:00:00Z",
-    "end_time": "2024-01-15T17:00:00Z",
-    "duration_minutes": 480,
-    "is_timer_active": false
-  }
 }
 ```
 
