@@ -234,7 +234,7 @@ export default function UserDetailPage() {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Assigned Projects</h3>
           <button
-            onClick={() => navigate(`/users/${user?.id}/add-project`)}
+            onClick={() => navigate(`/users/${user?.uuid}/add-project`)}
             className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

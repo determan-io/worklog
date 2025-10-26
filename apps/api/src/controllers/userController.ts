@@ -142,6 +142,7 @@ export class UserController {
               is_active: true,
               project: {
                 select: {
+                  id: true,
                   name: true,
                   description: true,
                   is_active: true,
