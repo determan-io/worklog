@@ -115,7 +115,12 @@ export default function ProjectsPage() {
               <div key={project.id} className="border rounded-lg p-4 hover:bg-gray-50">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h4 className="text-lg font-medium text-gray-900">{project.name}</h4>
+                    <button
+                      onClick={() => navigate(`/projects/detail/${project.id}`)}
+                      className="text-lg font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors duration-200"
+                    >
+                      {project.name}
+                    </button>
                     <div className="mt-1 text-sm text-gray-600">
                       {project.description && <p>{project.description}</p>}
                       <p>👤 {project.customer?.name}</p>

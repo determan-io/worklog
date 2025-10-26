@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCustomers } from '../hooks/useApi';
+import { useProject } from '../hooks/useApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-export default function CustomerDetailPage() {
+export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
-  const [projectStatusFilter, setProjectStatusFilter] = useState<'active' | 'inactive'>('active');
+  const [userStatusFilter, setUserStatusFilter] = useState<'active' | 'inactive'>('active');
   const [currentPage, setCurrentPage] = useState(1);
-  const [projectsPerPage, setProjectsPerPage] = useState(10);
+  const [usersPerPage, setUsersPerPage] = useState(10);
 
-  const { data: customersData, isLoading: customersLoading } = useCustomers();
-  const customer = customersData?.data?.find((c: any) => c.id === id);
+  const { data: projectData, isLoading: projectsLoading } = useProject(id || '');
+  const project = projectData?.data;
 
-  // Get projects and time entries for this customer
-  const projects = customer?.projects || [];
-  const timeEntries = customer?.projects?.flatMap((project: any) => project.time_entries || []) || [];
+  // Get time entries for this project
+  const timeEntries = project?.time_entries || [];
 
   // Filter entries for the selected period
   const getFilteredEntries = () => {
@@ -39,6 +38,19 @@ export default function CustomerDetailPage() {
 
   const filteredEntries = getFilteredEntries();
 
+  // Get unique users from time entries
+  const getUsersFromEntries = () => {
+    const userMap = new Map();
+    filteredEntries.forEach((entry: any) => {
+      if (entry.user && !userMap.has(entry.user.id)) {
+        userMap.set(entry.user.id, entry.user);
+      }
+    });
+    return Array.from(userMap.values());
+  };
+
+  const usersFromEntries = getUsersFromEntries();
+
   // Calculate statistics for the selected period
   const getEntryHours = (entry: any) => {
     return typeof entry.duration_hours === 'string' ? parseFloat(entry.duration_hours) : (entry.duration_hours || 0);
@@ -49,6 +61,17 @@ export default function CustomerDetailPage() {
   const nonBillableHours = totalHours - billableHours;
   const avgHoursPerWeek = selectedPeriod === 'week' ? totalHours : selectedPeriod === 'month' ? totalHours / 4 : totalHours / 52;
 
+  // Group by user for the period
+  const userBreakdown = usersFromEntries
+    .map((user: any) => {
+      const userEntries = filteredEntries.filter((e: any) => e.user?.id === user.id);
+      const hours = userEntries.reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
+      const billableHours = userEntries.filter((e: any) => e.is_billable).reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
+      return { user, hours, billableHours, entryCount: userEntries.length };
+    })
+    .filter(u => u.hours > 0)
+    .sort((a, b) => b.hours - a.hours);
+
   // Status breakdown
   const statusCounts = filteredEntries.reduce((acc: any, entry: any) => {
     acc[entry.status] = (acc[entry.status] || 0) + 1;
@@ -58,9 +81,9 @@ export default function CustomerDetailPage() {
   // Reset to page 1 when filter or page size changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [projectStatusFilter, projectsPerPage]);
+  }, [userStatusFilter, usersPerPage]);
 
-  const isLoading = customersLoading;
+  const isLoading = projectsLoading;
 
   if (isLoading) {
     return (
@@ -70,13 +93,13 @@ export default function CustomerDetailPage() {
     );
   }
 
-  if (!customer) {
+  if (!project) {
     return (
       <div className="max-w-7xl mx-auto p-6">
         <div className="card p-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Customer not found</h2>
-          <button onClick={() => navigate('/customers')} className="btn-secondary">
-            Back to Customers
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Project not found</h2>
+          <button onClick={() => navigate('/projects')} className="btn-secondary">
+            Back to Projects
           </button>
         </div>
       </div>
@@ -89,24 +112,32 @@ export default function CustomerDetailPage() {
       <div className="flex justify-between items-start mb-6">
         <div>
           <button
-            onClick={() => navigate('/customers')}
+            onClick={() => navigate('/projects')}
             className="text-gray-600 hover:text-gray-900 mb-2"
           >
-            ← Back to Customers
+            ← Back to Projects
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">{customer.name}</h1>
-          {customer.email && (
-            <p className="text-gray-600 mt-1">📧 {customer.email}</p>
+          <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+          {project.description && (
+            <p className="text-gray-600 mt-1">{project.description}</p>
+          )}
+          {project.customer && (
+            <button
+              onClick={() => navigate(`/customers/detail/${project.customer.id}`)}
+              className="text-blue-600 hover:text-blue-800 hover:underline mt-1"
+            >
+              👤 {project.customer.name}
+            </button>
           )}
         </div>
         <button
-          onClick={() => navigate(`/customers/edit/${customer.id}`)}
+          onClick={() => navigate(`/projects/edit/${project.id}`)}
           className="btn-outline btn-md flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
           </svg>
-          Edit Customer
+          Edit Project
         </button>
       </div>
 
@@ -186,36 +217,27 @@ export default function CustomerDetailPage() {
         </div>
       </div>
 
-      {/* All Projects */}
+      {/* Employees */}
       <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">All Projects</h3>
-          <button
-            onClick={() => navigate(`/projects/create?customer=${customer.id}`)}
-            className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add Project
-          </button>
+          <h3 className="text-lg font-medium text-gray-900">Employees</h3>
         </div>
 
         {/* Filter */}
         <div className="mb-4 flex justify-between items-center">
           <div className="flex space-x-2">
             <button
-              onClick={() => setProjectStatusFilter('active')}
+              onClick={() => setUserStatusFilter('active')}
               className={`px-3 py-1 rounded-md text-sm font-medium ${
-                projectStatusFilter === 'active' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                userStatusFilter === 'active' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               Active
             </button>
             <button
-              onClick={() => setProjectStatusFilter('inactive')}
+              onClick={() => setUserStatusFilter('inactive')}
               className={`px-3 py-1 rounded-md text-sm font-medium ${
-                projectStatusFilter === 'inactive' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                userStatusFilter === 'inactive' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               Inactive
@@ -223,68 +245,62 @@ export default function CustomerDetailPage() {
           </div>
         </div>
 
-        {/* Filtered and paginated projects */}
+        {/* Filtered and paginated users */}
         {(() => {
-          // Filter projects by status
-          const filteredProjects = projects.filter((project: any) => 
-            project.is_active === (projectStatusFilter === 'active')
+          // Filter users by status
+          const filteredUsers = userBreakdown.filter((data: any) => 
+            data.user.is_active === (userStatusFilter === 'active')
           );
 
           // Calculate pagination
-          const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
-          const startIndex = (currentPage - 1) * projectsPerPage;
-          const endIndex = startIndex + projectsPerPage;
-          const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+          const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+          const startIndex = (currentPage - 1) * usersPerPage;
+          const endIndex = startIndex + usersPerPage;
+          const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
           return (
             <>
-              {paginatedProjects.length > 0 ? (
+              {paginatedUsers.length > 0 ? (
                 <div className="space-y-3">
-                  {paginatedProjects.map((project: any) => (
-                    <div key={project.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                  {paginatedUsers.map((data: any, index: number) => (
+                    <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
                       <div className="flex justify-between items-center">
                         <div>
-                          <button
-                            onClick={() => navigate(`/projects/detail/${project.id}`)}
-                            className="text-lg font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors duration-200"
-                          >
-                            {project.name}
-                          </button>
-                          {project.description && (
-                            <p className="text-sm text-gray-600 mt-1">{project.description}</p>
-                          )}
+                          <h4 className="text-lg font-medium text-gray-900">
+                            {data.user.first_name} {data.user.last_name}
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">📧 {data.user.email}</p>
+                          <div className="mt-2 flex space-x-4 text-sm text-gray-500">
+                            <span>Total: {data.hours.toFixed(2)}h</span>
+                            <span>Billable: {data.billableHours.toFixed(2)}h</span>
+                            <span>Entries: {data.entryCount}</span>
+                          </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className={`px-2 py-1 rounded-full text-xs ${
-                            project.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            data.user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                           }`}>
-                            {project.is_active ? 'Active' : 'Inactive'}
+                            {data.user.is_active ? 'Active' : 'Inactive'}
                           </span>
-                          <button
-                            onClick={() => navigate(`/projects/detail/${project.id}`)}
-                            className="btn-outline btn-sm"
-                          >
-                            Edit
-                          </button>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">No {projectStatusFilter} projects yet</p>
+                <p className="text-gray-500 text-center py-8">No {userStatusFilter} employees with time entries in this period</p>
               )}
 
               {/* Pagination Controls */}
-              {filteredProjects.length > 0 && (
+              {filteredUsers.length > 0 && (
                 <div className="flex items-center justify-between mt-6 pt-4 border-t">
                   <div className="text-sm text-gray-600">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredProjects.length)} of {filteredProjects.length} projects
+                    Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} employees
                   </div>
                   <div className="flex items-center space-x-3">
                     <select
-                      value={projectsPerPage}
-                      onChange={(e) => setProjectsPerPage(Number(e.target.value))}
+                      value={usersPerPage}
+                      onChange={(e) => setUsersPerPage(Number(e.target.value))}
                       className="input text-sm w-24"
                     >
                       <option value="5">5</option>
@@ -321,3 +337,4 @@ export default function CustomerDetailPage() {
     </div>
   );
 }
+

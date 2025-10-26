@@ -11,6 +11,7 @@ import CustomersPage from './pages/CustomersPage';
 import CustomerDetailPage from './pages/CustomerDetailPage';
 import CustomerFormPage from './pages/CustomerFormPage';
 import ProjectFormPage from './pages/ProjectFormPage';
+import ProjectDetailPage from './pages/ProjectDetailPage';
 import TimeEntryFormPage from './pages/TimeEntryFormPage';
 import UsersPage from './pages/UsersPage';
 import UserFormPage from './pages/UserFormPage';
@@ -62,6 +63,7 @@ function App() {
         <Route path="/time-tracking/weekly" element={<TimeEntryFormPage />} />
         <Route path="/time-tracking/edit/:id" element={<TimeEntryFormPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
+        <Route path="/projects/detail/:id" element={<ProjectDetailPage />} />
         <Route path="/projects/create" element={<ProjectFormPage />} />
         <Route path="/projects/edit/:id" element={<ProjectFormPage />} />
         <Route path="/customers" element={<CustomersPage />} />

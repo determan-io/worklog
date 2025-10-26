@@ -84,6 +84,23 @@ export class ProjectController {
                 status: true
               }
             },
+            time_entries: {
+              take: 100, // Limit for performance
+              orderBy: {
+                entry_date: 'desc'
+              },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    email: true,
+                    first_name: true,
+                    last_name: true,
+                    is_active: true
+                  }
+                }
+              }
+            },
             _count: {
               select: {
                 time_entries: true
