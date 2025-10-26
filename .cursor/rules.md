@@ -1,3 +1,9 @@
+---
+description: Quick reference for WorkLog project rules
+globs: ["**/*"]
+alwaysApply: true
+---
+
 # WorkLog Project Rules
 
 This document provides a quick reference to the WorkLog project rules. For complete details, see the [rules directory](./.cursor/rules/).

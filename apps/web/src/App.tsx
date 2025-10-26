@@ -12,6 +12,7 @@ import CustomerFormPage from './pages/CustomerFormPage';
 import ProjectFormPage from './pages/ProjectFormPage';
 import TimeEntryFormPage from './pages/TimeEntryFormPage';
 import UsersPage from './pages/UsersPage';
+import UserFormPage from './pages/UserFormPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -66,6 +67,8 @@ function App() {
         <Route path="/customers/create" element={<CustomerFormPage />} />
         <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/users/create" element={<UserFormPage />} />
+        <Route path="/users/edit/:id" element={<UserFormPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

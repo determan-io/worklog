@@ -1,3 +1,9 @@
+---
+description: Git workflow and branch management for WorkLog
+globs: ["**/*"]
+alwaysApply: true
+---
+
 # Git Workflow & Branch Management Rules
 
 ## Branch Naming Convention

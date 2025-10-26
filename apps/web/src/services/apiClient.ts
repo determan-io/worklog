@@ -130,6 +130,26 @@ class ApiClient {
     return response.data;
   }
 
+  async getUserById(uuid: string) {
+    const response: AxiosResponse = await this.client.get(`/users/uuid/${uuid}`);
+    return response.data;
+  }
+
+  async createUser(data: any) {
+    const response: AxiosResponse = await this.client.post('/users', data);
+    return response.data;
+  }
+
+  async updateUser(id: string, data: any) {
+    const response: AxiosResponse = await this.client.put(`/users/${id}`, data);
+    return response.data;
+  }
+
+  async updateUserByUuid(uuid: string, data: any) {
+    const response: AxiosResponse = await this.client.put(`/users/uuid/${uuid}`, data);
+    return response.data;
+  }
+
   // Health check
   async healthCheck() {
     const response: AxiosResponse = await this.client.get('/health');

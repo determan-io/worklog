@@ -89,6 +89,24 @@ async function main() {
 
   console.log('✅ Users created:', { adminUser: adminUser.email, managerUser: managerUser.email, employeeUser: employeeUser.email });
 
+  // Create 20 additional test users
+  const testUsers = [];
+  for (let i = 1; i <= 20; i++) {
+    const user = await prisma.user.create({
+      data: {
+        organization_id: organization.id,
+        keycloak_id: `test-user-${i}-${Date.now()}`,
+        email: `user${i}@worklog.com`,
+        first_name: `Test`,
+        last_name: `User ${i}`,
+        role: i % 3 === 0 ? 'manager' : 'employee',
+        is_active: i % 5 !== 0, // Every 5th user is inactive
+      }
+    });
+    testUsers.push(user);
+  }
+  console.log('✅ Created 20 additional test users');
+
   // Create Users for Organization 2
   const adminUser2 = await prisma.user.upsert({
     where: { keycloak_id: 'admin-user2-keycloak-id' },

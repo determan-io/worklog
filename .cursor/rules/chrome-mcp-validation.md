@@ -1,3 +1,9 @@
+---
+description: Chrome MCP validation rules for WorkLog
+globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"]
+alwaysApply: true
+---
+
 # Chrome MCP Validation Rules
 
 ## Overview
