@@ -27,9 +27,7 @@ function AddUserToProjectPage() {
   const availableUsers = usersData?.data?.filter((user: any) => {
     if (!user.is_active) return false;
     const isAlreadyAssigned = memberships.some((membership: any) => {
-      const membershipUserId = typeof membership.user?.id === 'number' ? membership.user.id : parseInt(membership.user?.id);
-      const userId = typeof user.id === 'number' ? user.id : parseInt(user.id);
-      return membershipUserId === userId;
+      return membership.user?.uuid === user.uuid;
     });
     return !isAlreadyAssigned;
   }) || [];
@@ -94,7 +92,7 @@ function AddUserToProjectPage() {
             >
               <option value="">-- Please select a user --</option>
               {availableUsers.map((user: any) => (
-                <option key={user.id} value={user.id}>
+                <option key={user.uuid} value={user.uuid}>
                   {user.first_name} {user.last_name} - {user.email} {user.role && `(${user.role})`}
                 </option>
               ))}

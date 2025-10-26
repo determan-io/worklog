@@ -182,7 +182,7 @@ export default function UsersPage() {
         ) : paginatedUsers.length > 0 ? (
           <div className="space-y-4">
             {paginatedUsers.map((user: any) => (
-              <div key={user.id} className="border rounded-lg p-4 hover:bg-gray-50">
+              <div key={user.uuid} className="border rounded-lg p-4 hover:bg-gray-50">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">

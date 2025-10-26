@@ -65,7 +65,7 @@ export default function ProjectDetailPage() {
   const userBreakdown = memberships
     .map((membership: any) => {
       const user = membership.user;
-      const userEntries = filteredEntries.filter((e: any) => e.user?.id === user.id);
+      const userEntries = filteredEntries.filter((e: any) => e.user?.uuid === user.uuid);
       const hours = userEntries.reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
       const billableHours = userEntries.filter((e: any) => e.is_billable).reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
       return { 
@@ -304,10 +304,9 @@ export default function ProjectDetailPage() {
                             onClick={(e) => {
                               e.stopPropagation();
                               // Find the membership for this user
-                              const membership = memberships.find((m: any) => m.user?.id === data.user.id);
+                              const membership = memberships.find((m: any) => m.user?.uuid === data.user.uuid);
                               if (membership) {
-                                // Use uuid if available, fallback to id for backwards compatibility
-                                const membershipId = membership.uuid || membership.id;
+                                const membershipId = membership.uuid;
                                 navigate(`/projects/${id}/edit-membership/${membershipId}`);
                               }
                             }}
