@@ -120,7 +120,31 @@ export class UserController {
           role: true,
           is_active: true,
           created_at: true,
-          updated_at: true
+          updated_at: true,
+          project_memberships: {
+            select: {
+              id: true,
+              uuid: true,
+              project_id: true,
+              hourly_rate: true,
+              is_active: true,
+              project: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  is_active: true,
+                  billing_model: true,
+                  customer: {
+                    select: {
+                      id: true,
+                      name: true
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       });
 
