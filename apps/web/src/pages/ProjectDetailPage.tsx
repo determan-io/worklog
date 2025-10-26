@@ -243,7 +243,7 @@ export default function ProjectDetailPage() {
           <div className="flex space-x-2">
             <button
               onClick={() => setUserStatusFilter('active')}
-              className={`px-3 py-1 rounded-md text-sm font-medium ${
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 userStatusFilter === 'active' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -251,7 +251,7 @@ export default function ProjectDetailPage() {
             </button>
             <button
               onClick={() => setUserStatusFilter('inactive')}
-              className={`px-3 py-1 rounded-md text-sm font-medium ${
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                 userStatusFilter === 'inactive' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
