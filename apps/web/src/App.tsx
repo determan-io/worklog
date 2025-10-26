@@ -14,7 +14,11 @@ import ProjectFormPage from './pages/ProjectFormPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import TimeEntryFormPage from './pages/TimeEntryFormPage';
 import UsersPage from './pages/UsersPage';
+import UserDetailPage from './pages/UserDetailPage';
 import UserFormPage from './pages/UserFormPage';
+import AddUserToProjectPage from './pages/AddUserToProjectPage';
+import AddProjectToUserPage from './pages/AddProjectToUserPage';
+import EditMembershipPage from './pages/EditMembershipPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import LoadingSpinner from './components/LoadingSpinner';
@@ -66,13 +70,18 @@ function App() {
         <Route path="/projects/detail/:id" element={<ProjectDetailPage />} />
         <Route path="/projects/create" element={<ProjectFormPage />} />
         <Route path="/projects/edit/:id" element={<ProjectFormPage />} />
+        <Route path="/projects/:projectId/add-user" element={<AddUserToProjectPage />} />
+        <Route path="/projects/:projectId/edit-membership/:membershipId" element={<EditMembershipPage />} />
         <Route path="/customers" element={<CustomersPage />} />
         <Route path="/customers/detail/:id" element={<CustomerDetailPage />} />
         <Route path="/customers/create" element={<CustomerFormPage />} />
         <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
         <Route path="/users" element={<UsersPage />} />
+        <Route path="/users/detail/:id" element={<UserDetailPage />} />
         <Route path="/users/create" element={<UserFormPage />} />
         <Route path="/users/edit/:id" element={<UserFormPage />} />
+        <Route path="/users/:userId/add-project" element={<AddProjectToUserPage />} />
+        <Route path="/users/:userId/edit-membership/:membershipId" element={<EditMembershipPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

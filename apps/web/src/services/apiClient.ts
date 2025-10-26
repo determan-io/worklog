@@ -150,6 +150,26 @@ class ApiClient {
     return response.data;
   }
 
+  // Project Memberships
+  async addProjectMember(projectId: string, userId: string, role: string = 'member', hourlyRate?: number) {
+    const response: AxiosResponse = await this.client.post(`/projects/${projectId}/members`, {
+      user_id: userId,
+      role,
+      hourly_rate: hourlyRate
+    });
+    return response.data;
+  }
+
+  async updateProjectMember(membershipId: string, data: { role?: string; hourly_rate?: number; is_active?: boolean }) {
+    const response: AxiosResponse = await this.client.put(`/memberships/${membershipId}`, data);
+    return response.data;
+  }
+
+  async removeProjectMember(membershipId: string) {
+    const response: AxiosResponse = await this.client.delete(`/memberships/${membershipId}`);
+    return response.data;
+  }
+
   // Health check
   async healthCheck() {
     const response: AxiosResponse = await this.client.get('/health');

@@ -1,7 +1,11 @@
 import { Router } from 'express';
+import { authenticateToken } from '../middleware/auth';
 import projectMembershipController from '../controllers/projectMembershipController';
 
 const router = Router();
+
+// All routes require authentication
+router.use(authenticateToken);
 
 // Get all members of a project
 router.get('/projects/:projectId/members', projectMembershipController.getProjectMembers.bind(projectMembershipController));

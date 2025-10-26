@@ -164,7 +164,7 @@ export const useUsers = () => {
 export const useUser = (id: string) => {
   return useQuery({
     queryKey: ['users', id],
-    queryFn: () => apiClient.getUser(id),
+    queryFn: () => apiClient.getUserById(id),
     enabled: !!id,
   });
 };

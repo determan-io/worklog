@@ -156,7 +156,14 @@ export class ProjectMembershipController {
 
       // Create new membership
       const project = await prisma.project.findUnique({
-        where: { id: projectId }
+        where: { id: projectId },
+        include: {
+          organization: {
+            select: {
+              id: true
+            }
+          }
+        }
       });
 
       if (!project) {
@@ -170,7 +177,7 @@ export class ProjectMembershipController {
 
       const membership = await prisma.projectMembership.create({
         data: {
-          organization_id: parseInt(project.organization_id),
+          organization_id: project.organization.id,
           project_id: projectId,
           user_id: parseInt(user_id),
           role,
@@ -208,11 +215,19 @@ export class ProjectMembershipController {
   async updateMember(req: Request, res: Response) {
     try {
       const { membershipId } = req.params;
-      const { role, hourly_rate } = req.body;
+      const { role, hourly_rate, is_active } = req.body;
 
-      const membership = await prisma.projectMembership.findUnique({
-        where: { id: parseInt(membershipId) }
+      // Try to find by UUID first, then by ID if it fails
+      let membership = await prisma.projectMembership.findUnique({
+        where: { uuid: membershipId }
       });
+
+      if (!membership) {
+        // Fallback to numeric ID for backwards compatibility
+        membership = await prisma.projectMembership.findUnique({
+          where: { id: parseInt(membershipId) }
+        });
+      }
 
       if (!membership) {
         return res.status(404).json({
@@ -224,10 +239,11 @@ export class ProjectMembershipController {
       }
 
       const updatedMembership = await prisma.projectMembership.update({
-        where: { id: parseInt(membershipId) },
+        where: { id: membership.id },
         data: {
-          role: role || membership.role,
-          hourly_rate: hourly_rate !== undefined ? parseFloat(hourly_rate) : membership.hourly_rate
+          role: role !== undefined ? role : membership.role,
+          hourly_rate: hourly_rate !== undefined ? parseFloat(hourly_rate) : membership.hourly_rate,
+          is_active: is_active !== undefined ? is_active : membership.is_active
         },
         include: {
           user: {
@@ -262,9 +278,17 @@ export class ProjectMembershipController {
     try {
       const { membershipId } = req.params;
 
-      const membership = await prisma.projectMembership.findUnique({
-        where: { id: parseInt(membershipId) }
+      // Try to find by UUID first, then by ID if it fails
+      let membership = await prisma.projectMembership.findUnique({
+        where: { uuid: membershipId }
       });
+
+      if (!membership) {
+        // Fallback to numeric ID for backwards compatibility
+        membership = await prisma.projectMembership.findUnique({
+          where: { id: parseInt(membershipId) }
+        });
+      }
 
       if (!membership) {
         return res.status(404).json({
@@ -277,7 +301,7 @@ export class ProjectMembershipController {
 
       // Soft delete by setting is_active to false
       const updatedMembership = await prisma.projectMembership.update({
-        where: { id: parseInt(membershipId) },
+        where: { id: membership.id },
         data: {
           is_active: false,
           left_at: new Date()

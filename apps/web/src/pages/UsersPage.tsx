@@ -186,9 +186,12 @@ export default function UsersPage() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-3">
-                      <h4 className="text-lg font-medium text-gray-900">
+                      <button
+                        onClick={() => navigate(`/users/detail/${user.uuid}`)}
+                        className="text-lg font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors duration-200"
+                      >
                         {user.first_name} {user.last_name}
-                      </h4>
+                      </button>
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleBadgeColor(user.role)}`}>
                         {formatRole(user.role)}
                       </span>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProject } from '../hooks/useApi';
+import { useQueryClient } from '@tanstack/react-query';
+import { useProject, useUsers } from '../hooks/useApi';
+import { apiClient } from '../services/apiClient';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function ProjectDetailPage() {
@@ -11,11 +13,15 @@ export default function ProjectDetailPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(10);
 
+  const queryClient = useQueryClient();
   const { data: projectData, isLoading: projectsLoading } = useProject(id || '');
   const project = projectData?.data;
 
   // Get time entries for this project
   const timeEntries = project?.time_entries || [];
+  
+  // Get project memberships
+  const memberships = project?.memberships || [];
 
   // Filter entries for the selected period
   const getFilteredEntries = () => {
@@ -38,18 +44,12 @@ export default function ProjectDetailPage() {
 
   const filteredEntries = getFilteredEntries();
 
-  // Get unique users from time entries
-  const getUsersFromEntries = () => {
-    const userMap = new Map();
-    filteredEntries.forEach((entry: any) => {
-      if (entry.user && !userMap.has(entry.user.id)) {
-        userMap.set(entry.user.id, entry.user);
-      }
-    });
-    return Array.from(userMap.values());
+  // Get members from memberships
+  const getUsersFromMemberships = () => {
+    return memberships.map((membership: any) => membership.user);
   };
 
-  const usersFromEntries = getUsersFromEntries();
+  const usersFromMemberships = getUsersFromMemberships();
 
   // Calculate statistics for the selected period
   const getEntryHours = (entry: any) => {
@@ -61,15 +61,21 @@ export default function ProjectDetailPage() {
   const nonBillableHours = totalHours - billableHours;
   const avgHoursPerWeek = selectedPeriod === 'week' ? totalHours : selectedPeriod === 'month' ? totalHours / 4 : totalHours / 52;
 
-  // Group by user for the period
-  const userBreakdown = usersFromEntries
-    .map((user: any) => {
+  // Group by user for the period (from memberships and time entries)
+  const userBreakdown = memberships
+    .map((membership: any) => {
+      const user = membership.user;
       const userEntries = filteredEntries.filter((e: any) => e.user?.id === user.id);
       const hours = userEntries.reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
       const billableHours = userEntries.filter((e: any) => e.is_billable).reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
-      return { user, hours, billableHours, entryCount: userEntries.length };
+      return { 
+        user, 
+        hours, 
+        billableHours, 
+        entryCount: userEntries.length,
+        hourlyRate: membership.hourly_rate ? parseFloat(membership.hourly_rate) : null
+      };
     })
-    .filter(u => u.hours > 0)
     .sort((a, b) => b.hours - a.hours);
 
   // Status breakdown
@@ -221,6 +227,15 @@ export default function ProjectDetailPage() {
       <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Employees</h3>
+          <button
+            onClick={() => navigate(`/projects/${id}/add-user`)}
+            className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add User
+          </button>
         </div>
 
         {/* Filter */}
@@ -266,10 +281,18 @@ export default function ProjectDetailPage() {
                     <div key={index} className="border rounded-lg p-4 hover:bg-gray-50">
                       <div className="flex justify-between items-center">
                         <div>
-                          <h4 className="text-lg font-medium text-gray-900">
+                          <button
+                            onClick={() => navigate(`/users/detail/${data.user.uuid}`)}
+                            className="text-lg font-medium text-gray-900 hover:text-blue-600 hover:underline transition-colors duration-200"
+                          >
                             {data.user.first_name} {data.user.last_name}
-                          </h4>
+                          </button>
                           <p className="text-sm text-gray-600 mt-1">📧 {data.user.email}</p>
+                          {data.hourlyRate && (
+                            <p className="text-sm font-medium text-green-600 mt-1">
+                              💰 ${data.hourlyRate.toFixed(2)}/hour
+                            </p>
+                          )}
                           <div className="mt-2 flex space-x-4 text-sm text-gray-500">
                             <span>Total: {data.hours.toFixed(2)}h</span>
                             <span>Billable: {data.billableHours.toFixed(2)}h</span>
@@ -277,11 +300,24 @@ export default function ProjectDetailPage() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            data.user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {data.user.is_active ? 'Active' : 'Inactive'}
-                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // Find the membership for this user
+                              const membership = memberships.find((m: any) => m.user?.id === data.user.id);
+                              if (membership) {
+                                // Use uuid if available, fallback to id for backwards compatibility
+                                const membershipId = membership.uuid || membership.id;
+                                navigate(`/projects/${id}/edit-membership/${membershipId}`);
+                              }
+                            }}
+                            className="btn-outline btn-sm flex items-center gap-1"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit
+                          </button>
                         </div>
                       </div>
                     </div>

@@ -188,6 +188,24 @@ export class ProjectController {
               }
             }
           },
+          memberships: {
+            select: {
+              id: true,
+              uuid: true,
+              hourly_rate: true,
+              is_active: true,
+              user: {
+                select: {
+                  id: true,
+                  uuid: true,
+                  email: true,
+                  first_name: true,
+                  last_name: true,
+                  is_active: true
+                }
+              }
+            }
+          },
           _count: {
             select: {
               time_entries: true
