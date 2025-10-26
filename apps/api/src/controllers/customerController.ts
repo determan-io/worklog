@@ -43,7 +43,7 @@ export class CustomerController {
                 description: true,
                 time_entries: {
                   select: {
-                    id: true,
+                    uuid: true,
                     entry_date: true,
                     duration_hours: true,
                     is_billable: true,

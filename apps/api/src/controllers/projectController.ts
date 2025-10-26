@@ -196,7 +196,6 @@ export class ProjectController {
               is_active: true,
               user: {
                 select: {
-                  id: true,
                   uuid: true,
                   email: true,
                   first_name: true,
@@ -366,6 +365,7 @@ export class ProjectController {
         description, 
         customer_id, 
         sow_id,
+        billing_model,
         status,
         is_active,
         start_date,
@@ -373,6 +373,8 @@ export class ProjectController {
         hourly_rate,
         budget_hours
       } = req.body;
+
+      console.log('📝 Update project request:', { id, name, customer_id, billing_model, body: req.body });
 
       // Validate required fields
       if (!name) {
@@ -409,6 +411,7 @@ export class ProjectController {
             description: description || null,
             customer_id,
             sow_id: sow_id || null,
+            billing_model: billing_model || existingProject.billing_model,
             status: status || existingProject.status,
             is_active: is_active !== undefined ? is_active : existingProject.is_active,
             start_date: start_date ? new Date(start_date) : existingProject.start_date,

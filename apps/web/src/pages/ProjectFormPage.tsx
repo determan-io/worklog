@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { useCreateProject, useUpdateProject, useProjects, useCustomers } from '../hooks/useApi';
+import { useCreateProject, useUpdateProject, useProjects, useProject, useCustomers } from '../hooks/useApi';
 import { validateProject } from '../schemas/projectSchema';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -12,6 +12,7 @@ export default function ProjectFormPage() {
   
   const { data: customersData, isLoading: customersLoading } = useCustomers();
   const { data: projectsData, isLoading: projectsLoading } = useProjects({});
+  const { data: singleProjectData, isLoading: singleProjectLoading } = useProject(id || '');
   const createProjectMutation = useCreateProject();
   const updateProjectMutation = useUpdateProject();
   
@@ -28,18 +29,16 @@ export default function ProjectFormPage() {
 
   // Load project data in edit mode or pre-populate customer from query param
   useEffect(() => {
-    if (isEditMode && projectsData?.data && id) {
-      const foundProject = projectsData.data.find((p: any) => p.id === id);
-      if (foundProject) {
-        setProject({
-          name: foundProject.name,
-          description: foundProject.description || '',
-          customer_id: foundProject.customer_id,
-          billing_model: foundProject.billing_model || 'task-based',
-          hourly_rate: foundProject.hourly_rate?.toString() || '',
-          is_active: foundProject.is_active ?? true
-        });
-      }
+    if (isEditMode && singleProjectData?.data) {
+      const foundProject = singleProjectData.data;
+      setProject({
+        name: foundProject.name,
+        description: foundProject.description || '',
+        customer_id: foundProject.customer_id,
+        billing_model: foundProject.billing_model || 'task-based',
+        hourly_rate: foundProject.hourly_rate?.toString() || '',
+        is_active: foundProject.is_active ?? true
+      });
     } else if (!isEditMode) {
       // Pre-populate customer if coming from customer page
       const customerParam = searchParams.get('customer');
@@ -47,7 +46,7 @@ export default function ProjectFormPage() {
         setProject(prev => ({ ...prev, customer_id: customerParam }));
       }
     }
-  }, [projectsData, id, isEditMode, searchParams]);
+  }, [singleProjectData, isEditMode, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +62,7 @@ export default function ProjectFormPage() {
       if (isEditMode) {
         await updateProjectMutation.mutateAsync({
           id: id!,
-          ...validation.data
+          data: validation.data
         });
       } else {
         await createProjectMutation.mutateAsync(validation.data);
@@ -75,7 +74,7 @@ export default function ProjectFormPage() {
     }
   };
 
-  if (isEditMode && (customersLoading || projectsLoading)) {
+  if (isEditMode && (customersLoading || singleProjectLoading)) {
     return (
       <div className="flex items-center justify-center py-8">
         <LoadingSpinner />
@@ -155,6 +154,7 @@ export default function ProjectFormPage() {
               if (errors['billing_model']) setErrors({...errors, billing_model: ''});
             }}
             required
+            disabled={isEditMode}
           >
             <option value="">Please select...</option>
             <option value="task-based">Task-Based</option>

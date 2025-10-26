@@ -120,14 +120,15 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       role: user.role
     });
 
-    // Attach user to request
+    // Attach user to request (only UUID, never expose internal database ID)
     req.user = {
-      id: user.id.toString(),
+      id: user.id, // Keep internal ID for database queries only
+      uuid: user.uuid,
       email: user.email,
       organizationId: user.organization.uuid,
       role: user.role,
       keycloakId: user.keycloak_id
-    };
+    } as any;
 
     next();
   } catch (error) {

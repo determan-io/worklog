@@ -270,7 +270,7 @@ export default function UserDetailPage() {
         {paginatedMemberships.length > 0 ? (
           <div className="space-y-3">
             {paginatedMemberships.map((membership: any) => (
-              <div key={membership.id} className="border rounded-lg p-4 hover:bg-gray-50">
+              <div key={membership.uuid} className="border rounded-lg p-4 hover:bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div className="flex-1">
                     <button

@@ -149,6 +149,7 @@ export class UserController {
                   billing_model: true,
                   customer: {
                     select: {
+                      id: true,
                       name: true
                     }
                   }

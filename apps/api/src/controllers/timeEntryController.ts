@@ -74,7 +74,7 @@ export class TimeEntryController {
           include: {
             user: {
               select: {
-                id: true,
+                uuid: true,
                 email: true,
                 first_name: true,
                 last_name: true
@@ -300,7 +300,7 @@ export class TimeEntryController {
           include: {
             user: {
               select: {
-                id: true,
+                uuid: true,
                 email: true,
                 first_name: true,
                 last_name: true
