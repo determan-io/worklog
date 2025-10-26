@@ -16,24 +16,29 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Update dependencies
         run: |
-          npm update
-          npm audit fix
+          pnpm update
+          pnpm audit fix
 
       - name: Check for updates
         id: check-updates
         run: |
-          if git diff --quiet package-lock.json; then
+          if git diff --quiet pnpm-lock.yaml; then
             echo "updates=false" >> $GITHUB_OUTPUT
           else
             echo "updates=true" >> $GITHUB_OUTPUT
