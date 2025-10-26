@@ -58,7 +58,6 @@ export class UserController {
           organization_id: organization.id
         },
         select: {
-          id: true,
           uuid: true,
           keycloak_id: true,
           email: true,
@@ -86,87 +85,6 @@ export class UserController {
         error: {
           code: 'INTERNAL_ERROR',
           message: 'Failed to fetch users'
-        }
-      });
-    }
-  }
-
-  // Get user details by ID
-  async getUserById(req: Request, res: Response) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({
-          error: {
-            code: 'AUTHENTICATION_REQUIRED',
-            message: 'Authentication required'
-          }
-        });
-      }
-
-      const { id } = req.params;
-
-      const user = await prisma.user.findFirst({
-        where: {
-          id: parseInt(id),
-          organization_id: parseInt(req.user.organizationId)
-        },
-        select: {
-          id: true,
-          uuid: true,
-          keycloak_id: true,
-          email: true,
-          first_name: true,
-          last_name: true,
-          role: true,
-          is_active: true,
-          created_at: true,
-          updated_at: true,
-          project_memberships: {
-            select: {
-              id: true,
-              uuid: true,
-              project_id: true,
-              hourly_rate: true,
-              is_active: true,
-              project: {
-                select: {
-                  id: true,
-                  name: true,
-                  description: true,
-                  is_active: true,
-                  billing_model: true,
-                  customer: {
-                    select: {
-                      id: true,
-                      name: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-
-      if (!user) {
-        return res.status(404).json({
-          error: {
-            code: 'USER_NOT_FOUND',
-            message: 'User not found or access denied'
-          }
-        });
-      }
-
-      res.json({
-        data: user,
-        message: 'User retrieved successfully'
-      });
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      return res.status(500).json({
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: 'Failed to fetch user'
         }
       });
     }
@@ -207,7 +125,6 @@ export class UserController {
           organization_id: organization.id
         },
         select: {
-          id: true,
           uuid: true,
           keycloak_id: true,
           email: true,
@@ -219,21 +136,18 @@ export class UserController {
           updated_at: true,
           project_memberships: {
             select: {
-              id: true,
               uuid: true,
               project_id: true,
               hourly_rate: true,
               is_active: true,
               project: {
                 select: {
-                  id: true,
                   name: true,
                   description: true,
                   is_active: true,
                   billing_model: true,
                   customer: {
                     select: {
-                      id: true,
                       name: true
                     }
                   }
@@ -401,6 +315,17 @@ export class UserController {
           last_name: lastName,
           role: role,
           is_active: isActive !== undefined ? isActive : true
+        },
+        select: {
+          uuid: true,
+          keycloak_id: true,
+          email: true,
+          first_name: true,
+          last_name: true,
+          role: true,
+          is_active: true,
+          created_at: true,
+          updated_at: true
         }
       });
 
@@ -416,117 +341,6 @@ export class UserController {
         error: {
           code: 'INTERNAL_ERROR',
           message: error.response?.data?.errorMessage || 'Failed to create user'
-        }
-      });
-    }
-  }
-
-  // Update user information
-  async updateUser(req: Request, res: Response) {
-    try {
-      if (!req.user) {
-        return res.status(401).json({
-          error: {
-            code: 'AUTHENTICATION_REQUIRED',
-            message: 'Authentication required'
-          }
-        });
-      }
-
-      const { id } = req.params;
-      const { firstName, lastName, role } = req.body;
-
-      console.log('👤 Updating user:', id, { firstName, lastName, role });
-
-      // Validate required fields
-      if (!firstName || !lastName) {
-        return res.status(400).json({
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'First name and last name are required'
-          }
-        });
-      }
-
-      // Get organization
-      const organization = await prisma.organization.findUnique({
-        where: { uuid: req.user.organizationId }
-      });
-
-      if (!organization) {
-        return res.status(404).json({
-          error: {
-            code: 'ORGANIZATION_NOT_FOUND',
-            message: 'Organization not found'
-          }
-        });
-      }
-
-      // Update user in database
-      const user = await prisma.user.findFirst({
-        where: {
-          id: parseInt(id),
-          organization_id: organization.id
-        }
-      });
-
-      if (!user) {
-        return res.status(404).json({
-          error: {
-            code: 'USER_NOT_FOUND',
-            message: 'User not found or access denied'
-          }
-        });
-      }
-
-      // Update user in database
-      const updatedUser = await prisma.user.update({
-        where: { id: parseInt(id) },
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          role: role,
-        }
-      });
-
-      console.log('✅ User updated in database:', updatedUser.email);
-
-      // Update user in Keycloak (optional - for name changes)
-      if (user.keycloak_id) {
-        try {
-          const adminToken = await getKeycloakAdminToken();
-
-          await axios.put(
-            `http://localhost:8080/admin/realms/worklog/users/${user.keycloak_id}`,
-            {
-              firstName: firstName,
-              lastName: lastName,
-            },
-            {
-              headers: {
-                'Authorization': `Bearer ${adminToken}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          );
-
-          console.log('✅ User updated in Keycloak');
-        } catch (error) {
-          console.error('Error updating user in Keycloak:', error);
-          // Continue even if Keycloak update fails
-        }
-      }
-
-      res.json({
-        data: updatedUser,
-        message: 'User updated successfully'
-      });
-    } catch (error: any) {
-      console.error('Error updating user:', error);
-      return res.status(500).json({
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: error.message || 'Failed to update user'
         }
       });
     }
@@ -598,6 +412,17 @@ export class UserController {
           last_name: lastName,
           role: role,
           is_active: isActive !== undefined ? isActive : user.is_active,
+        },
+        select: {
+          uuid: true,
+          keycloak_id: true,
+          email: true,
+          first_name: true,
+          last_name: true,
+          role: true,
+          is_active: true,
+          created_at: true,
+          updated_at: true
         }
       });
 

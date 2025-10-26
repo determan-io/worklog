@@ -125,13 +125,8 @@ class ApiClient {
     return response.data;
   }
 
-  async getUser(id: string) {
-    const response: AxiosResponse = await this.client.get(`/users/${id}`);
-    return response.data;
-  }
-
   async getUserById(uuid: string) {
-    const response: AxiosResponse = await this.client.get(`/users/uuid/${uuid}`);
+    const response: AxiosResponse = await this.client.get(`/users/${uuid}`);
     return response.data;
   }
 
@@ -140,13 +135,8 @@ class ApiClient {
     return response.data;
   }
 
-  async updateUser(id: string, data: any) {
-    const response: AxiosResponse = await this.client.put(`/users/${id}`, data);
-    return response.data;
-  }
-
   async updateUserByUuid(uuid: string, data: any) {
-    const response: AxiosResponse = await this.client.put(`/users/uuid/${uuid}`, data);
+    const response: AxiosResponse = await this.client.put(`/users/${uuid}`, data);
     return response.data;
   }
 
