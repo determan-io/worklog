@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTimeEntries, useDeleteTimeEntry, useUpdateTimeEntry } from '../hooks/useApi';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -13,7 +13,7 @@ export default function TimeTrackingPage() {
   const isLoading = timeEntriesLoading;
 
   // Status filter state
-  const [statusFilter, setStatusFilter] = React.useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Check if entry is editable (draft or rejected)
   const isEditable = (status: string) => ['draft', 'rejected'].includes(status);
@@ -45,7 +45,6 @@ export default function TimeTrackingPage() {
       let i = 0;
       while (i < projectEntries.length) {
         const weekEntries = [projectEntries[i]];
-        const firstDate = new Date(projectEntries[i].entry_date);
         
         // Look for entries that are consecutive days
         for (let j = i + 1; j < projectEntries.length; j++) {
