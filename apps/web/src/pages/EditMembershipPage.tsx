@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useProject, useUser } from '../hooks/useApi';
 import { apiClient } from '../services/apiClient';
 
 function EditMembershipPage() {
@@ -40,10 +39,10 @@ function EditMembershipPage() {
     },
     enabled: !!membershipId && (!!projectId || !!userId),
     staleTime: 0,
-    cacheTime: 0
+    gcTime: 0
   });
 
-  const membership = membershipData;
+  const membership = membershipData as any; // Type assertion since membership type varies
 
   // Fetch user data separately if we're coming from user detail page
   const { data: userData, isLoading: isUserLoading } = useQuery({
