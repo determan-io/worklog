@@ -15,13 +15,13 @@ importers:
         specifier: ^8.2.2
         version: 8.2.2
       husky:
-        specifier: ^9.0.11
+        specifier: ^9.1.7
         version: 9.1.7
       lint-staged:
-        specifier: ^15.2.2
+        specifier: ^15.5.2
         version: 15.5.2
       prettier:
-        specifier: ^3.2.5
+        specifier: ^3.6.2
         version: 3.6.2
 
   apps/api:
