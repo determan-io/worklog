@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjects } from '../hooks/useApi';
+import { useAuthStore } from '../stores/authStore';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function ProjectsPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active');
   const [currentPage, setCurrentPage] = useState(1);
@@ -12,6 +14,9 @@ export default function ProjectsPage() {
 
   const { data: projectsData, isLoading } = useProjects({ is_active: 'true' });
   const projects = projectsData?.data || [];
+  
+  // Check if user can manage projects (admin or manager)
+  const canManageProjects = user?.role === 'admin' || user?.role === 'manager';
 
   // Filter projects based on search term and status
   const filteredProjects = projects.filter((project: any) => {
@@ -60,15 +65,17 @@ export default function ProjectsPage() {
             Manage your projects and customers
           </p>
         </div>
-        <button
-          className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
-          onClick={() => navigate('/projects/create')}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          New Project
-        </button>
+        {canManageProjects && (
+          <button
+            className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+            onClick={() => navigate('/projects/create')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            New Project
+          </button>
+        )}
       </div>
 
       {/* Search Bar */}
@@ -88,17 +95,19 @@ export default function ProjectsPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="sm:w-48">
-            <select
-              className="input w-full"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-            >
-              <option value="all">All Projects</option>
-              <option value="active">Active Only</option>
-              <option value="inactive">Inactive Only</option>
-            </select>
-          </div>
+          {canManageProjects && (
+            <div className="sm:w-48">
+              <select
+                className="input w-full"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+              >
+                <option value="all">All Projects</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive Only</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
@@ -135,17 +144,19 @@ export default function ProjectsPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex space-x-2">
-                    <button 
-                      className="btn-outline btn-sm flex items-center gap-1 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                      onClick={() => handleEditProject(project)}
-                    >
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit
-                    </button>
-                  </div>
+                  {canManageProjects && (
+                    <div className="flex space-x-2">
+                      <button 
+                        className="btn-outline btn-sm flex items-center gap-1 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                        onClick={() => handleEditProject(project)}
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
