@@ -21,6 +21,8 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+*.log
+api.log
 
 # Runtime data
 pids
