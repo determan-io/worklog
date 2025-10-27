@@ -99,12 +99,14 @@ export default function Layout({ children }: LayoutProps) {
               >
                 Projects
               </a>
-              <a
-                href="/customers"
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
-              >
-                Customers
-              </a>
+              {(user?.role === 'admin' || user?.role === 'manager') && (
+                <a
+                  href="/customers"
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
+                >
+                  Customers
+                </a>
+              )}
               {(user?.role === 'admin' || user?.role === 'manager') && (
                 <a
                   href="/users"

@@ -7,6 +7,26 @@ export class CustomerController {
   // Get all customers for the organization
   async getCustomers(req: Request, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      // Only admins and managers can view customers
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee attempted to access customers - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Only administrators and managers can view customers'
+          }
+        });
+      }
+
       const { page = 1, limit = 20, search, active } = req.query;
       const skip = (Number(page) - 1) * Number(limit);
 
@@ -91,6 +111,26 @@ export class CustomerController {
   // Get a specific customer by ID
   async getCustomer(req: Request, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      // Only admins and managers can view customers
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee attempted to access customer details - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Only administrators and managers can view customers'
+          }
+        });
+      }
+
       const { id } = req.params;
 
       const customer = await prisma.customer.findFirst({
@@ -159,6 +199,26 @@ export class CustomerController {
   // Create a new customer
   async createCustomer(req: Request, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      // Only admins and managers can create customers
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee attempted to create customer - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Only administrators and managers can create customers'
+          }
+        });
+      }
+
       const {
         name,
         email,
@@ -228,6 +288,26 @@ export class CustomerController {
   // Update a customer
   async updateCustomer(req: Request, res: Response) {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      // Only admins and managers can update customers
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee attempted to update customer - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Only administrators and managers can update customers'
+          }
+        });
+      }
+
       const { id } = req.params;
       const {
         name,

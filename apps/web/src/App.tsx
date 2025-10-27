@@ -73,10 +73,10 @@ function App() {
         <Route path="/projects/edit/:id" element={<ProjectFormPage />} />
         <Route path="/projects/:projectId/add-user" element={<AddUserToProjectPage />} />
         <Route path="/projects/:projectId/edit-membership/:membershipId" element={<EditMembershipPage />} />
-        <Route path="/customers" element={<CustomersPage />} />
-        <Route path="/customers/detail/:id" element={<CustomerDetailPage />} />
-        <Route path="/customers/create" element={<CustomerFormPage />} />
-        <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
+        <Route path="/customers" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><CustomersPage /></ProtectedRoute>} />
+        <Route path="/customers/detail/:id" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><CustomerDetailPage /></ProtectedRoute>} />
+        <Route path="/customers/create" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><CustomerFormPage /></ProtectedRoute>} />
+        <Route path="/customers/edit/:id" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><CustomerFormPage /></ProtectedRoute>} />
         <Route path="/users" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UsersPage /></ProtectedRoute>} />
         <Route path="/users/detail/:id" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UserDetailPage /></ProtectedRoute>} />
         <Route path="/users/create" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UserFormPage /></ProtectedRoute>} />
