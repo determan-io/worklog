@@ -310,6 +310,136 @@ This document outlines comprehensive test scenarios for each user role to ensure
 
 ---
 
+## User Creation & Keycloak Integration Tests
+
+### Admin User Creation
+
+#### ⚠️ UC-001: Admin Creates Employee via UI
+**Given:** User is logged in as admin  
+**When:** 
+1. They navigate to Users page
+2. Click "New User" button
+3. Fill in employee details (name, email, role=employee)
+4. Submit the form
+
+**Then:**
+- Employee is created in database
+- Employee is created in Keycloak
+- Employee has the correct organization group assigned
+- Employee has the correct realm roles: ["user", "employee"]
+- Employee can be found in Keycloak admin panel
+
+#### ⚠️ UC-002: Verify User in Keycloak Admin
+**Given:** Admin has created an employee via UI  
+**When:** 
+1. Login to Keycloak admin console (http://localhost:8080)
+2. Navigate to Users section
+3. Search for the newly created employee
+4. Click on the user to view details
+
+**Then:**
+- User exists in Keycloak
+- User has email verified: true
+- User belongs to the correct group (organization)
+  - Organization 1 users: `/WorkLog Development`
+  - Organization 2 users: `/WorkLog Production`
+- User has the correct realm roles:
+  - `user` (base role)
+  - `employee` (specific role)
+- User is enabled: true
+
+#### ⚠️ UC-003: Verify User Can Login
+**Given:** Admin has created an employee and verified in Keycloak  
+**When:**
+1. Logout from admin account
+2. Click "Sign in with Keycloak"
+3. Enter employee credentials
+4. Submit login form
+
+**Then:**
+- Employee can login successfully
+- Employee JWT token contains correct roles: ["user", "employee"]
+- Employee is redirected to dashboard
+- Employee sees employee-level access (no Customers/Users links)
+- Employee can only see assigned projects
+
+#### ⚠️ UC-004: Admin Creates Manager via UI
+**Given:** User is logged in as admin  
+**When:** 
+1. Navigate to Users page
+2. Click "New User"
+3. Fill in manager details (name, email, role=manager)
+4. Submit the form
+
+**Then:**
+- Manager is created in database
+- Manager is created in Keycloak
+- Manager has correct organization group
+- Manager has correct realm roles: ["user", "manager"]
+- Manager can login and has manager-level access
+
+#### ⚠️ UC-005: Verify Manager Role in Keycloak
+**Given:** Admin has created a manager  
+**When:** Check manager in Keycloak admin  
+**Then:**
+- Manager has realm roles: ["user", "manager"]
+- Manager belongs to correct organization group
+- Manager JWT token contains ["user", "manager"] roles
+
+#### ⚠️ UC-006: Employee Cannot Create Users
+**Given:** User is logged in as employee  
+**When:** They try to navigate to `/users` or `/users/create`  
+**Then:**
+- Employee is redirected to dashboard (UI protection)
+- If accessing API directly:
+  - `POST /api/v1/users` returns 403 Forbidden
+  - Error message: "Only administrators and managers can create users"
+
+#### ⚠️ UC-007: Cross-Organization User Creation
+**Given:** Admin from Organization 1 (Development)  
+**When:** They try to create a user  
+**Then:**
+- User is created in admin's organization
+- User is assigned to Organization 1 group
+- User belongs to `/WorkLog Development` in Keycloak
+- User cannot access Organization 2 data
+
+### Keycloak Verification Steps
+
+#### ⚠️ KV-001: Login to Keycloak Admin
+**Given:** Need to verify Keycloak configuration  
+**When:** Access http://localhost:8080  
+**Then:**
+- Login page is displayed
+- Can login with: admin / admin123
+- Admin console is accessible
+
+#### ⚠️ KV-002: Navigate to Realm Settings
+**Given:** Logged into Keycloak admin  
+**When:** Navigate to Realm > worklog > Realm Settings  
+**Then:**
+- Realm "worklog" is configured
+- Roles exist: user, admin, manager, employee
+
+#### ⚠️ KV-003: Check User Groups
+**Given:** Viewing a user in Keycloak admin  
+**When:** Navigate to user's Groups tab  
+**Then:**
+- User belongs to correct organization group
+- Organization 1: `/WorkLog Development`
+- Organization 2: `/WorkLog Production`
+
+#### ⚠️ KV-004: Check User Roles
+**Given:** Viewing a user in Keycloak admin  
+**When:** Navigate to user's Role Mappings tab  
+**Then:**
+- User has correct realm roles assigned
+- Employee: ["user", "employee"]
+- Manager: ["user", "manager"]
+- Admin: ["user", "admin"]
+
+---
+
 ## Security Boundary Tests
 
 ### Cross-Organization Access
