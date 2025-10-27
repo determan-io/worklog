@@ -73,6 +73,20 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       console.log('❌ Failed to decode token');
       throw new Error('Invalid token');
     }
+
+    // Extract role from JWT token
+    // Priority: admin > manager > employee > user
+    let userRole = 'employee'; // Default role
+    const roles = decoded.realm_access?.roles || [];
+    if (roles.includes('admin')) {
+      userRole = 'admin';
+    } else if (roles.includes('manager')) {
+      userRole = 'manager';
+    } else if (roles.includes('employee')) {
+      userRole = 'employee';
+    }
+
+    console.log('🎭 Extracted role from JWT:', userRole);
     
     console.log(`🔍 Looking up user in database with keycloak_id: ${decoded.sub}`);
     
@@ -128,7 +142,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       id: user.id,
       email: user.email,
       organization: user.organization.name,
-      role: user.role
+      role: userRole
     });
 
     // Attach user to request (only UUID, never expose internal database ID)
@@ -137,7 +151,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       uuid: user.uuid,
       email: user.email,
       organizationId: user.organization.uuid,
-      role: user.role,
+      role: userRole, // Use role from JWT token
       keycloakId: user.keycloak_id
     } as any;
 
