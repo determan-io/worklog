@@ -229,6 +229,59 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
+      {/* Time Entries - Show for employees */}
+      {isEmployee && filteredEntries.length > 0 && (
+      <div className="card p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">My Time Entries</h3>
+        </div>
+
+        <div className="space-y-3">
+          {filteredEntries.map((entry: any) => (
+            <div key={entry.id} className="border rounded-lg p-4 hover:bg-gray-50">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-gray-600">
+                      {new Date(entry.entry_date).toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      entry.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      entry.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
+                      entry.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {entry.status}
+                    </span>
+                    {entry.is_billable && (
+                      <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Billable</span>
+                    )}
+                  </div>
+                  {entry.description && (
+                    <p className="text-sm text-gray-600 mt-1">{entry.description}</p>
+                  )}
+                  <div className="mt-2 flex gap-4 text-sm text-gray-500">
+                    <span>Duration: {getEntryHours(entry).toFixed(2)}h</span>
+                    {entry.start_time && entry.end_time && (
+                      <span>Time: {entry.start_time} - {entry.end_time}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-semibold text-gray-900">{getEntryHours(entry).toFixed(2)}h</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      )}
+
       {/* Employees - Hidden for employees */}
       {!isEmployee && (
       <div className="card p-6">
