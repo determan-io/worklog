@@ -230,11 +230,32 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Time Entries - Show for employees */}
-      {isEmployee && filteredEntries.length > 0 && (
+      {isEmployee && (
       <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">My Time Entries</h3>
+          <button
+            onClick={() => navigate(`/time-entries/new?project_id=${project?.id}`)}
+            className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Entry
+          </button>
         </div>
+
+        {filteredEntries.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No time entries for this period</p>
+            <button
+              onClick={() => navigate(`/time-entries/new?project_id=${project?.id}`)}
+              className="btn-primary btn-md mt-4"
+            >
+              Create Your First Time Entry
+            </button>
+          </div>
+        ) : (
 
         <div className="space-y-3">
           {filteredEntries.map((entry: any) => (
@@ -279,6 +300,7 @@ export default function ProjectDetailPage() {
             </div>
           ))}
         </div>
+        )}
       </div>
       )}
 
