@@ -11,6 +11,7 @@ export default function ProjectDetailPage() {
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [userStatusFilter, setUserStatusFilter] = useState<'active' | 'inactive'>('active');
+  const [entryStatusFilter, setEntryStatusFilter] = useState<'all' | 'draft' | 'submitted' | 'approved' | 'rejected'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(10);
 
@@ -46,7 +47,12 @@ export default function ProjectDetailPage() {
     });
   };
 
-  const filteredEntries = getFilteredEntries();
+  const periodFilteredEntries = getFilteredEntries();
+  
+  // Filter by entry status for employee view
+  const filteredEntries = entryStatusFilter === 'all' 
+    ? periodFilteredEntries 
+    : periodFilteredEntries.filter((entry: any) => entry.status === entryStatusFilter);
 
   // Get members from memberships
   const getUsersFromMemberships = () => {
@@ -60,8 +66,8 @@ export default function ProjectDetailPage() {
     return typeof entry.duration_hours === 'string' ? parseFloat(entry.duration_hours) : (entry.duration_hours || 0);
   };
 
-  const totalHours = filteredEntries.reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
-  const billableHours = filteredEntries.filter((e: any) => e.is_billable).reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
+  const totalHours = periodFilteredEntries.reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
+  const billableHours = periodFilteredEntries.filter((e: any) => e.is_billable).reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
   const nonBillableHours = totalHours - billableHours;
   const avgHoursPerWeek = selectedPeriod === 'week' ? totalHours : selectedPeriod === 'month' ? totalHours / 4 : totalHours / 52;
 
@@ -69,7 +75,7 @@ export default function ProjectDetailPage() {
   const userBreakdown = memberships
     .map((membership: any) => {
       const user = membership.user;
-      const userEntries = filteredEntries.filter((e: any) => e.user?.uuid === user.uuid);
+      const userEntries = periodFilteredEntries.filter((e: any) => e.user?.uuid === user.uuid);
       const hours = userEntries.reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
       const billableHours = userEntries.filter((e: any) => e.is_billable).reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
       return { 
@@ -83,7 +89,7 @@ export default function ProjectDetailPage() {
     .sort((a, b) => b.hours - a.hours);
 
   // Status breakdown
-  const statusCounts = filteredEntries.reduce((acc: any, entry: any) => {
+  const statusCounts = periodFilteredEntries.reduce((acc: any, entry: any) => {
     acc[entry.status] = (acc[entry.status] || 0) + 1;
     return acc;
   }, {});
@@ -242,6 +248,50 @@ export default function ProjectDetailPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Add Entry
+          </button>
+        </div>
+
+        {/* Status Filter */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          <button
+            onClick={() => setEntryStatusFilter('all')}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              entryStatusFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            All ({periodFilteredEntries.length})
+          </button>
+          <button
+            onClick={() => setEntryStatusFilter('draft')}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              entryStatusFilter === 'draft' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Draft ({statusCounts.draft || 0})
+          </button>
+          <button
+            onClick={() => setEntryStatusFilter('submitted')}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              entryStatusFilter === 'submitted' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Submitted ({statusCounts.submitted || 0})
+          </button>
+          <button
+            onClick={() => setEntryStatusFilter('approved')}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              entryStatusFilter === 'approved' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Approved ({statusCounts.approved || 0})
+          </button>
+          <button
+            onClick={() => setEntryStatusFilter('rejected')}
+            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
+              entryStatusFilter === 'rejected' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            Rejected ({statusCounts.rejected || 0})
           </button>
         </div>
 
