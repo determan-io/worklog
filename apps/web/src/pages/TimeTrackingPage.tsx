@@ -204,7 +204,14 @@ export default function TimeTrackingPage() {
                         <div className="mt-1 text-sm text-gray-600">
                           <p>📋 {entry.project?.name} - {entry.project?.customer?.name}</p>
                           {entry.entry_date && (
-                            <p>📅 {new Date(entry.entry_date).toLocaleDateString()}</p>
+                            <p>
+                              📅 <button 
+                                onClick={() => navigate(`/time-entries/${entry.id}`)}
+                                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                              >
+                                {new Date(entry.entry_date).toLocaleDateString()}
+                              </button>
+                            </p>
                           )}
                           {entry.duration_hours && (
                             <p>⏱️ {parseFloat(entry.duration_hours).toFixed(2)} hours</p>
@@ -220,6 +227,16 @@ export default function TimeTrackingPage() {
                     )}
                   </div>
                   <div className="flex space-x-2">
+                    <button 
+                      className="btn-outline btn-sm flex items-center gap-1 hover:bg-gray-50 transition-all duration-200"
+                      onClick={() => navigate(`/time-entries/${entry.id}`)}
+                    >
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      View Details
+                    </button>
                     {isEditable(entry.status) && (
                       <>
                         <button 
