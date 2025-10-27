@@ -11,6 +11,9 @@ router.use(authenticateToken);
 // POST /api/v1/users - Create a new user
 router.post('/', userController.createUser.bind(userController));
 
+// GET /api/v1/users/me - Get current authenticated user
+router.get('/me', userController.getCurrentUser.bind(userController));
+
 // PUT /api/v1/users/:uuid - Update user information by UUID
 router.put('/:uuid', userController.updateUserByUuid.bind(userController));
 

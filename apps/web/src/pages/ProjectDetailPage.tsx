@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useProject, useUsers } from '../hooks/useApi';
 import { apiClient } from '../services/apiClient';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuthStore } from '../stores/authStore';
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -12,6 +13,9 @@ export default function ProjectDetailPage() {
   const [userStatusFilter, setUserStatusFilter] = useState<'active' | 'inactive'>('active');
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(10);
+
+  const { user } = useAuthStore();
+  const isEmployee = user?.role === 'employee';
 
   const queryClient = useQueryClient();
   const { data: projectData, isLoading: projectsLoading } = useProject(id || '');
@@ -136,15 +140,17 @@ export default function ProjectDetailPage() {
             </button>
           )}
         </div>
-        <button
-          onClick={() => navigate(`/projects/edit/${project.id}`)}
-          className="btn-outline btn-md flex items-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          Edit Project
-        </button>
+        {!isEmployee && (
+          <button
+            onClick={() => navigate(`/projects/edit/${project.id}`)}
+            className="btn-outline btn-md flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit Project
+          </button>
+        )}
       </div>
 
       {/* Period Selector */}
@@ -223,7 +229,8 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      {/* Employees */}
+      {/* Employees - Hidden for employees */}
+      {!isEmployee && (
       <div className="card p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Employees</h3>
@@ -369,6 +376,7 @@ export default function ProjectDetailPage() {
           );
         })()}
       </div>
+      )}
     </div>
   );
 }

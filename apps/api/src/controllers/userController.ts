@@ -24,6 +24,62 @@ async function getKeycloakAdminToken(): Promise<string> {
 }
 
 export class UserController {
+  // Get current authenticated user
+  async getCurrentUser(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        include: {
+          organization: {
+            select: {
+              uuid: true,
+              name: true
+            }
+          }
+        }
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          error: {
+            code: 'USER_NOT_FOUND',
+            message: 'User not found'
+          }
+        });
+      }
+
+      res.json({
+        data: {
+          uuid: user.uuid,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.role,
+          is_active: user.is_active,
+          organization: user.organization
+        },
+        message: 'User retrieved successfully'
+      });
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+      return res.status(500).json({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to fetch user'
+        }
+      });
+    }
+  }
+
   // Get users in the authenticated user's organization
   async getUsers(req: Request, res: Response) {
     try {

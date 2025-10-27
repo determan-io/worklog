@@ -20,6 +20,10 @@
       {
         "name": "manager",
         "description": "Manager role"
+      },
+      {
+        "name": "employee",
+        "description": "Employee role"
       }
     ]
   },
@@ -98,7 +102,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["user"],
+      "realmRoles": ["user", "employee"],
       "groups": ["/WorkLog Development"],
       "requiredActions": []
     },
@@ -152,7 +156,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["user"],
+      "realmRoles": ["user", "employee"],
       "groups": ["/WorkLog Development"],
       "requiredActions": []
     },
@@ -170,7 +174,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["user"],
+      "realmRoles": ["user", "employee"],
       "groups": ["/WorkLog Development"],
       "requiredActions": []
     },
@@ -188,7 +192,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["user"],
+      "realmRoles": ["user", "employee"],
       "groups": ["/WorkLog Production"],
       "requiredActions": []
     },
@@ -206,7 +210,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["user"],
+      "realmRoles": ["user", "employee"],
       "groups": ["/WorkLog Production"],
       "requiredActions": []
     },
@@ -224,7 +228,7 @@
           "temporary": false
         }
       ],
-      "realmRoles": ["user"],
+      "realmRoles": ["user", "employee"],
       "groups": ["/WorkLog Production"],
       "requiredActions": []
     }

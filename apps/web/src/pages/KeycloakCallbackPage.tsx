@@ -40,14 +40,26 @@ export default function KeycloakCallbackPage() {
             // Decode JWT token to get user info (simple version, should use proper JWT library)
             const tokenPayload = JSON.parse(atob(data.access_token.split('.')[1]));
             
+            // Get role from JWT token - check for specific roles (admin, manager, employee)
+            let userRole = 'employee'; // Default role
+            const roles = tokenPayload.realm_access?.roles || [];
+            
+            if (roles.includes('admin')) {
+              userRole = 'admin';
+            } else if (roles.includes('manager')) {
+              userRole = 'manager';
+            } else if (roles.includes('employee')) {
+              userRole = 'employee';
+            }
+            
             // Login with token
             login(data.access_token, {
               id: tokenPayload.sub,
               email: tokenPayload.email || tokenPayload.preferred_username,
               firstName: tokenPayload.given_name || '',
               lastName: tokenPayload.family_name || '',
-              role: tokenPayload.realm_access?.roles?.[0] || 'user',
-              organizationId: '', // Will be set by API
+              role: userRole,
+              organizationId: '', // Will be set by API on first request
             });
             
             // Redirect to dashboard

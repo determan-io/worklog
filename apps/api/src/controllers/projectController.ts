@@ -208,6 +208,7 @@ export class ProjectController {
               }
           },
           time_entries: {
+            where: req.user.role === 'employee' ? { user_id: req.user.id } : undefined,
             take: 10,
             orderBy: {
               entry_date: 'desc'
@@ -224,6 +225,7 @@ export class ProjectController {
             }
           },
           memberships: {
+            where: req.user.role === 'employee' ? { user_id: req.user.id } : undefined,
             select: {
               id: true,
               uuid: true,
