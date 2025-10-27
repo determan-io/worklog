@@ -73,12 +73,14 @@ export class UserController {
 
         // Return only public fields
         const userData = {
+          uuid: user.uuid,
           id: user.id,
           email: user.email,
           first_name: user.first_name || '',
           last_name: user.last_name || '',
           role: user.role,
           is_active: user.is_active,
+          keycloak_id: user.keycloak_id,
           created_at: user.created_at,
           updated_at: user.updated_at
         };
@@ -103,12 +105,14 @@ export class UserController {
 
       // Map to public fields only
       const usersData = users.map(user => ({
+        uuid: user.uuid,
         id: user.id,
         email: user.email,
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         role: user.role,
         is_active: user.is_active,
+        keycloak_id: user.keycloak_id,
         created_at: user.created_at,
         updated_at: user.updated_at
       }));
