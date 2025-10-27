@@ -70,6 +70,16 @@ export default function ProjectDetailPage() {
   const billableHours = periodFilteredEntries.filter((e: any) => e.is_billable).reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
   const nonBillableHours = totalHours - billableHours;
   const avgHoursPerWeek = selectedPeriod === 'week' ? totalHours : selectedPeriod === 'month' ? totalHours / 4 : totalHours / 52;
+  
+  // Calculate approved hours
+  const approvedHours = periodFilteredEntries
+    .filter((e: any) => e.status === 'approved')
+    .reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
+  
+  // Calculate pending hours (draft + submitted)
+  const pendingHours = periodFilteredEntries
+    .filter((e: any) => e.status === 'draft' || e.status === 'submitted')
+    .reduce((sum: number, entry: any) => sum + getEntryHours(entry), 0);
 
   // Group by user for the period (from memberships and time entries)
   const userBreakdown = memberships
@@ -192,10 +202,18 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-blue-50 rounded-lg p-4">
             <p className="text-sm font-medium text-blue-600 mb-1">Total Hours</p>
             <p className="text-3xl font-bold text-gray-900">{totalHours.toFixed(2)}</p>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4">
+            <p className="text-sm font-medium text-green-600 mb-1">Approved Hours</p>
+            <p className="text-3xl font-bold text-gray-900">{approvedHours.toFixed(2)}</p>
+          </div>
+          <div className="bg-yellow-50 rounded-lg p-4">
+            <p className="text-sm font-medium text-yellow-600 mb-1">Pending Hours</p>
+            <p className="text-3xl font-bold text-gray-900">{pendingHours.toFixed(2)}</p>
           </div>
           <div className="bg-purple-50 rounded-lg p-4">
             <p className="text-sm font-medium text-purple-600 mb-1">Avg/Week</p>
