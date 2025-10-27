@@ -77,5 +77,8 @@
     "typescript"
   ],
   "author": "WorkLog Team",
-  "license": "MIT"
+  "license": "MIT",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  }
 }

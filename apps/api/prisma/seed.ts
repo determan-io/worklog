@@ -214,7 +214,9 @@ async function main() {
             task_description: `Weekly work on ${membership.project.name}`,
             is_billable: true,
             hourly_rate: membership.hourly_rate,
-            status: 'approved'
+            status: 'approved',
+            approved_at: date,
+            approved_by: 'manager@worklog.com'
           }
         });
         timeEntries.push(entry);
@@ -229,21 +231,55 @@ async function main() {
     new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
   ];
 
-  for (const taskDate of recentDates) {
-    await prisma.timeEntry.create({
-      data: {
-        organization_id: organization.id,
-        project_id: projects[0].id,
-        user_id: employee1.id,
-        entry_date: taskDate,
-        duration_hours: 4.5,
-        task_description: 'Task-based development work - Implement user authentication',
-        is_billable: true,
-        hourly_rate: 75,
-        status: 'submitted'
-      }
-    });
-  }
+  // First entry (today) - approved
+  const today = new Date();
+  await prisma.timeEntry.create({
+    data: {
+      organization_id: organization.id,
+      project_id: projects[0].id,
+      user_id: employee1.id,
+      entry_date: today,
+      duration_hours: 4.5,
+      task_description: 'Task-based development work - Implement user authentication',
+      is_billable: true,
+      hourly_rate: 75,
+      status: 'approved',
+      approved_at: today,
+      approved_by: 'manager@worklog.com'
+    }
+  });
+
+  // Second entry (7 days ago) - submitted
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  await prisma.timeEntry.create({
+    data: {
+      organization_id: organization.id,
+      project_id: projects[0].id,
+      user_id: employee1.id,
+      entry_date: sevenDaysAgo,
+      duration_hours: 6.0,
+      task_description: 'Frontend development - User interface enhancements',
+      is_billable: true,
+      hourly_rate: 75,
+      status: 'submitted'
+    }
+  });
+
+  // Third entry (14 days ago) - draft
+  const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+  await prisma.timeEntry.create({
+    data: {
+      organization_id: organization.id,
+      project_id: projects[0].id,
+      user_id: employee1.id,
+      entry_date: fourteenDaysAgo,
+      duration_hours: 3.5,
+      task_description: 'Database optimization and query improvements',
+      is_billable: true,
+      hourly_rate: 75,
+      status: 'draft'
+    }
+  });
 
   console.log(`✅ Created ${timeEntries.length + 3} time entries over the last 3 months`);
 
@@ -457,7 +493,9 @@ async function main() {
             task_description: `Weekly work on ${membership2.project.name}`,
             is_billable: true,
             hourly_rate: membership2.hourly_rate,
-            status: 'approved'
+            status: 'approved',
+            approved_at: date,
+            approved_by: 'manager2@worklog.com'
           }
         });
         timeEntries2.push(entry);
@@ -474,7 +512,7 @@ async function main() {
   console.log(`  - 6 Customers (3 per org)`);
   console.log(`  - 12 Projects (6 per org)`);
   console.log(`  - 6 Project Memberships (3 per org)`);
-  console.log(`  - ${timeEntries.length + 1 + timeEntries2.length} Time Entries`);
+  console.log(`  - ${timeEntries.length + 3 + timeEntries2.length} Time Entries`);
 }
 
 main()
