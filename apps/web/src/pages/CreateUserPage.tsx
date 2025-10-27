@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { apiClient } from '../services/apiClient';
-import LoadingSpinner from '../components/LoadingSpinner';
 
-interface FormData {
+interface CreateUserFormData {
   email: string;
   firstName: string;
   lastName: string;
   role: string;
   organizationId: string;
+  password?: string;
 }
 
 export default function CreateUserPage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<CreateUserFormData>({
     email: '',
     firstName: '',
     lastName: '',
@@ -77,7 +77,7 @@ export default function CreateUserPage() {
     });
   };
 
-  const handleChange = (field: keyof FormData, value: string) => {
+  const handleChange = (field: keyof CreateUserFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field when user starts typing
     if (errors[field]) {

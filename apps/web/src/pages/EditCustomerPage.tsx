@@ -40,7 +40,7 @@ export default function EditCustomerPage() {
     try {
       await updateCustomerMutation.mutateAsync({
         id: customer.id,
-        ...validation.data
+        data: validation.data
       });
       navigate('/customers');
     } catch (error) {

@@ -60,7 +60,7 @@ export default function CustomerFormPage() {
       if (isEditMode) {
         await updateCustomerMutation.mutateAsync({
           id: id!,
-          ...validation.data
+          data: validation.data
         });
       } else {
         await createCustomerMutation.mutateAsync(validation.data);
