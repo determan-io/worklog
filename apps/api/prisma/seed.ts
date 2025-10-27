@@ -180,16 +180,16 @@ async function main() {
 
   console.log('✅ Created 3 project memberships');
 
-  // Create 6 months of time entry data
+  // Create recent time entry data (last 3 months)
   const startDate = new Date();
-  startDate.setMonth(startDate.getMonth() - 6);
+  startDate.setMonth(startDate.getMonth() - 3);
   
   const employees = [employee1, employee2, employee3];
   const timeEntries = [];
 
-  // Generate weekly time entries (one per week)
-  for (let month = 0; month < 6; month++) {
-    for (let week = 0; week < 4; week++) {
+  // Generate recent weekly time entries
+  for (let month = 0; month < 3; month++) {
+    for (let week = 0; week < 2; week++) {
       const date = new Date(startDate);
       date.setMonth(startDate.getMonth() + month);
       date.setDate(date.getDate() + (week * 7));
@@ -222,24 +222,30 @@ async function main() {
     }
   }
 
-  // Create one specific task entry
-  const taskDate = new Date();
-  taskDate.setMonth(taskDate.getMonth() - 1);
-  await prisma.timeEntry.create({
-    data: {
-      organization_id: organization.id,
-      project_id: projects[0].id,
-      user_id: employee1.id,
-      entry_date: taskDate,
-      duration_hours: 4.5,
-      task_description: 'Task-based development work - Implement user authentication',
-      is_billable: true,
-      hourly_rate: 75,
-      status: 'submitted'
-    }
-  });
+  // Create a few recent task entries (this week, last week, 2 weeks ago)
+  const recentDates = [
+    new Date(), // today
+    new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+    new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
+  ];
 
-  console.log(`✅ Created ${timeEntries.length + 1} time entries over 6 months`);
+  for (const taskDate of recentDates) {
+    await prisma.timeEntry.create({
+      data: {
+        organization_id: organization.id,
+        project_id: projects[0].id,
+        user_id: employee1.id,
+        entry_date: taskDate,
+        duration_hours: 4.5,
+        task_description: 'Task-based development work - Implement user authentication',
+        is_billable: true,
+        hourly_rate: 75,
+        status: 'submitted'
+      }
+    });
+  }
+
+  console.log(`✅ Created ${timeEntries.length + 3} time entries over the last 3 months`);
 
   // Create Second Organization
   console.log('\n🌱 Creating second organization...');
