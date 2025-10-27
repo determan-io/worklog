@@ -196,14 +196,7 @@ export default function TimeTrackingPage() {
                         </h4>
                         <div className="mt-1 text-sm text-gray-600">
                           <p>📋 {entry.project?.name} - {entry.project?.customer?.name}</p>
-                          <p>
-                            📅 <button 
-                              onClick={() => navigate(`/time-entries/${entry.weekEntries[0].uuid}`)}
-                              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                            >
-                              Week of {new Date(entry.weekStartDate).toLocaleDateString()}
-                            </button>
-                          </p>
+                          <p>📅 Week of {new Date(entry.weekStartDate).toLocaleDateString()}</p>
                           <p>⏱️ {entry.totalHours.toFixed(2)} hours total ({entry.entry_count} days)</p>
                           {entry.hourly_rate && (
                             <p>💰 ${parseFloat(entry.hourly_rate).toFixed(2)}/hour</p>
@@ -216,14 +209,7 @@ export default function TimeTrackingPage() {
                         <div className="mt-1 text-sm text-gray-600">
                           <p>📋 {entry.project?.name} - {entry.project?.customer?.name}</p>
                           {entry.entry_date && (
-                            <p>
-                              📅 <button 
-                                onClick={() => navigate(`/time-entries/${entry.uuid}`)}
-                                className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                              >
-                                {new Date(entry.entry_date).toLocaleDateString()}
-                              </button>
-                            </p>
+                            <p>📅 {new Date(entry.entry_date).toLocaleDateString()}</p>
                           )}
                           {entry.duration_hours && (
                             <p>⏱️ {parseFloat(entry.duration_hours).toFixed(2)} hours</p>
