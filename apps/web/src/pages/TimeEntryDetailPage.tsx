@@ -130,14 +130,6 @@ export default function TimeEntryDetailPage() {
             </div>
           )}
 
-          {/* Billable */}
-          <div>
-            <label className="text-sm font-medium text-gray-500">Billable</label>
-            <p className="text-lg font-semibold text-gray-900 mt-1">
-              {timeEntry.is_billable ? 'Yes' : 'No'}
-            </p>
-          </div>
-
           {/* Created and Updated Dates */}
           {timeEntry.created_at && (
             <div>
