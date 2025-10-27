@@ -181,6 +181,8 @@ model TimeEntry {
   hourly_rate       Decimal? @db.Decimal(10, 2)
   notes             String?
   status            String   @default("draft") // 'draft', 'submitted', 'approved', 'rejected'
+  approved_at       DateTime?
+  approved_by       String?  @map("approved_by") // Email of the approver
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
 

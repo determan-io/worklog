@@ -80,6 +80,25 @@ export default function TimeEntryDetailPage() {
             </div>
           </div>
 
+          {/* Approved Date and By */}
+          {timeEntry.approved_at && (
+            <div>
+              <label className="text-sm font-medium text-gray-500">Approved</label>
+              <p className="text-lg font-semibold text-gray-900 mt-1">
+                {new Date(timeEntry.approved_at).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+              {timeEntry.approved_by && (
+                <p className="text-sm text-gray-600 mt-1">by {timeEntry.approved_by}</p>
+              )}
+            </div>
+          )}
+
           {/* Project */}
           {timeEntry.project && (
             <div>
