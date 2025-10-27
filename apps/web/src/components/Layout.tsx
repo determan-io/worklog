@@ -11,8 +11,12 @@ export default function Layout({ children }: LayoutProps) {
 
   const handleSignOut = () => {
     logout();
-    localStorage.removeItem('auth-token');
-    window.location.href = '/login';
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Redirect to Keycloak logout with proper redirect
+    const keycloakLogoutUrl = `http://localhost:8080/realms/worklog/protocol/openid-connect/logout?client_id=worklog-web&post_logout_redirect_uri=${encodeURIComponent('http://localhost:3000/login')}`;
+    window.location.href = keycloakLogoutUrl;
   };
 
   // Close menu when clicking outside
@@ -101,12 +105,14 @@ export default function Layout({ children }: LayoutProps) {
               >
                 Customers
               </a>
-              <a
-                href="/users"
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
-              >
-                Users
-              </a>
+              {(user?.role === 'admin' || user?.role === 'manager') && (
+                <a
+                  href="/users"
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
+                >
+                  Users
+                </a>
+              )}
               <a
                 href="/reports"
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"

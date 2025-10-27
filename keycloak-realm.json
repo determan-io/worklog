@@ -52,6 +52,7 @@
       "username": "admin@worklog",
       "enabled": true,
       "email": "admin@worklog.com",
+      "emailVerified": true,
       "firstName": "Admin",
       "lastName": "User",
       "credentials": [
@@ -62,13 +63,14 @@
         }
       ],
       "realmRoles": ["user", "admin"],
-      "groups": ["/Acme Corp"],
+      "groups": ["/WorkLog Development"],
       "requiredActions": []
     },
     {
       "username": "manager@worklog",
       "enabled": true,
       "email": "manager@worklog.com",
+      "emailVerified": true,
       "firstName": "Manager",
       "lastName": "User",
       "credentials": [
@@ -79,15 +81,16 @@
         }
       ],
       "realmRoles": ["user", "manager"],
-      "groups": ["/Acme Corp"],
+      "groups": ["/WorkLog Development"],
       "requiredActions": []
     },
     {
-      "username": "employee@worklog",
+      "username": "employee1@worklog",
       "enabled": true,
-      "email": "employee@worklog.com",
+      "email": "employee1@worklog.com",
+      "emailVerified": true,
       "firstName": "Employee",
-      "lastName": "User",
+      "lastName": "One",
       "credentials": [
         {
           "type": "password",
@@ -96,23 +99,149 @@
         }
       ],
       "realmRoles": ["user"],
-      "groups": ["/TechStart Inc"],
+      "groups": ["/WorkLog Development"],
+      "requiredActions": []
+    },
+    {
+      "username": "admin2@worklog",
+      "enabled": true,
+      "email": "admin2@worklog.com",
+      "emailVerified": true,
+      "firstName": "Admin",
+      "lastName": "Production",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user", "admin"],
+      "groups": ["/WorkLog Production"],
+      "requiredActions": []
+    },
+    {
+      "username": "manager2@worklog",
+      "enabled": true,
+      "email": "manager2@worklog.com",
+      "emailVerified": true,
+      "firstName": "Manager",
+      "lastName": "Production",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "manager123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user", "manager"],
+      "groups": ["/WorkLog Production"],
+      "requiredActions": []
+    },
+    {
+      "username": "employee2@worklog",
+      "enabled": true,
+      "email": "employee2@worklog.com",
+      "emailVerified": true,
+      "firstName": "Employee",
+      "lastName": "Two",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "employee123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "groups": ["/WorkLog Development"],
+      "requiredActions": []
+    },
+    {
+      "username": "employee3@worklog",
+      "enabled": true,
+      "email": "employee3@worklog.com",
+      "emailVerified": true,
+      "firstName": "Employee",
+      "lastName": "Three",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "employee123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "groups": ["/WorkLog Development"],
+      "requiredActions": []
+    },
+    {
+      "username": "employee4@worklog",
+      "enabled": true,
+      "email": "employee4@worklog.com",
+      "emailVerified": true,
+      "firstName": "Employee",
+      "lastName": "Four",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "employee123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "groups": ["/WorkLog Production"],
+      "requiredActions": []
+    },
+    {
+      "username": "employee5@worklog",
+      "enabled": true,
+      "email": "employee5@worklog.com",
+      "emailVerified": true,
+      "firstName": "Employee",
+      "lastName": "Five",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "employee123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "groups": ["/WorkLog Production"],
+      "requiredActions": []
+    },
+    {
+      "username": "employee6@worklog",
+      "enabled": true,
+      "email": "employee6@worklog.com",
+      "emailVerified": true,
+      "firstName": "Employee",
+      "lastName": "Six",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "employee123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["user"],
+      "groups": ["/WorkLog Production"],
       "requiredActions": []
     }
   ],
   "groups": [
     {
-      "name": "Acme Corp",
-      "path": "/Acme Corp",
+      "name": "WorkLog Development",
+      "path": "/WorkLog Development",
       "attributes": {
-        "organization_id": ["acme-corp-uuid"]
+        "organization_id": ["worklog-dev-org-uuid"]
       }
     },
     {
-      "name": "TechStart Inc",
-      "path": "/TechStart Inc",
+      "name": "WorkLog Production",
+      "path": "/WorkLog Production",
       "attributes": {
-        "organization_id": ["techstart-inc-uuid"]
+        "organization_id": ["worklog-prod-org-uuid"]
       }
     }
   ]

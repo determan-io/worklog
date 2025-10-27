@@ -52,21 +52,47 @@ export class UserController {
       }
 
       console.log('✅ Organization found:', organization.name);
+      console.log('👤 User role:', req.user.role);
 
+      // Role-based access control
+      // Employees can only see their own data
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee access - returning only own data');
+        const user = await prisma.user.findUnique({
+          where: { id: req.user.id }
+        });
+
+        if (!user) {
+          return res.json({
+            data: [],
+            message: 'User not found'
+          });
+        }
+
+        console.log('✅ Returning employee data for:', user.email);
+
+        // Return only public fields
+        const userData = {
+          id: user.id,
+          email: user.email,
+          first_name: user.first_name || '',
+          last_name: user.last_name || '',
+          role: user.role,
+          is_active: user.is_active,
+          created_at: user.created_at,
+          updated_at: user.updated_at
+        };
+
+        return res.json({
+          data: [userData],
+          message: 'User retrieved successfully'
+        });
+      }
+
+      // Admins and managers can see all users in their organization
       const users = await prisma.user.findMany({
         where: {
           organization_id: organization.id
-        },
-        select: {
-          uuid: true,
-          keycloak_id: true,
-          email: true,
-          first_name: true,
-          last_name: true,
-          role: true,
-          is_active: true,
-          created_at: true,
-          updated_at: true
         },
         orderBy: {
           created_at: 'desc'
@@ -75,8 +101,20 @@ export class UserController {
 
       console.log(`✅ Found ${users.length} users for organization ${organization.name}`);
 
-      res.json({
-        data: users,
+      // Map to public fields only
+      const usersData = users.map(user => ({
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        role: user.role,
+        is_active: user.is_active,
+        created_at: user.created_at,
+        updated_at: user.updated_at
+      }));
+
+      return res.json({
+        data: usersData,
         message: 'Users retrieved successfully'
       });
     } catch (error) {
@@ -192,6 +230,17 @@ export class UserController {
           error: {
             code: 'AUTHENTICATION_REQUIRED',
             message: 'Authentication required'
+          }
+        });
+      }
+
+      // Only admins and managers can create users
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee attempted to create user - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Only administrators and managers can create users'
           }
         });
       }
@@ -364,6 +413,31 @@ export class UserController {
       const { firstName, lastName, role, isActive } = req.body;
 
       console.log('👤 Updating user by UUID:', uuid, { firstName, lastName, role });
+
+      // Role-based access control
+      // Employees can only update their own profile and cannot change their role
+      const isEmployee = req.user.role === 'employee';
+      const isUpdatingSelf = uuid === req.user.uuid;
+      
+      if (isEmployee && !isUpdatingSelf) {
+        console.log('🔒 Employee attempted to update another user - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Employees can only update their own profile'
+          }
+        });
+      }
+
+      if (isEmployee && role !== undefined && role !== req.user.role) {
+        console.log('🔒 Employee attempted to change role - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Employees cannot change roles'
+          }
+        });
+      }
 
       // Validate required fields
       if (!firstName || !lastName) {

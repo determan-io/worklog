@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore } from './stores/authStore';
 import Layout from './components/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import KeycloakCallbackPage from './pages/KeycloakCallbackPage';
 import DashboardPage from './pages/DashboardPage';
@@ -76,12 +77,12 @@ function App() {
         <Route path="/customers/detail/:id" element={<CustomerDetailPage />} />
         <Route path="/customers/create" element={<CustomerFormPage />} />
         <Route path="/customers/edit/:id" element={<CustomerFormPage />} />
-        <Route path="/users" element={<UsersPage />} />
-        <Route path="/users/detail/:id" element={<UserDetailPage />} />
-        <Route path="/users/create" element={<UserFormPage />} />
-        <Route path="/users/edit/:id" element={<UserFormPage />} />
-        <Route path="/users/:userId/add-project" element={<AddProjectToUserPage />} />
-        <Route path="/users/:userId/edit-membership/:membershipId" element={<EditMembershipPage />} />
+        <Route path="/users" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UsersPage /></ProtectedRoute>} />
+        <Route path="/users/detail/:id" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UserDetailPage /></ProtectedRoute>} />
+        <Route path="/users/create" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UserFormPage /></ProtectedRoute>} />
+        <Route path="/users/edit/:id" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UserFormPage /></ProtectedRoute>} />
+        <Route path="/users/:userId/add-project" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><AddProjectToUserPage /></ProtectedRoute>} />
+        <Route path="/users/:userId/edit-membership/:membershipId" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><EditMembershipPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

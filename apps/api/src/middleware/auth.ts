@@ -9,7 +9,8 @@ declare global {
   namespace Express {
     interface Request {
       user?: {
-        id: string;
+        id: number;
+        uuid: string;
         email: string;
         organizationId: string;
         role: string;
@@ -113,10 +114,20 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
       });
     }
 
+    if (!user.organization) {
+      console.log('❌ User has no organization assigned');
+      return res.status(403).json({
+        error: {
+          code: 'NO_ORGANIZATION',
+          message: 'User is not assigned to any organization'
+        }
+      });
+    }
+
     console.log('✅ Authentication successful:', {
       id: user.id,
       email: user.email,
-      organization: user.organization?.name,
+      organization: user.organization.name,
       role: user.role
     });
 

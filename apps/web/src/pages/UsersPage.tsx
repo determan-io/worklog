@@ -2,15 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUsers } from '../hooks/useApi';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useAuthStore } from '../stores/authStore';
 
 export default function UsersPage() {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('active');
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage, setUsersPerPage] = useState(10);
 
   const { data: usersData, isLoading: usersLoading } = useUsers();
+  
+  // Check if user can create users (admin or manager only)
+  const canCreateUsers = user?.role === 'admin' || user?.role === 'manager';
 
   const users = usersData?.data || [];
 
@@ -68,15 +73,17 @@ export default function UsersPage() {
             Manage your organization's users
           </p>
         </div>
-        <button
-          className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
-          onClick={() => navigate('/users/create')}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          New User
-        </button>
+        {canCreateUsers && (
+          <button
+            className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+            onClick={() => navigate('/users/create')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            New User
+          </button>
+        )}
       </div>
 
       {/* Summary Stats */}

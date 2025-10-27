@@ -267,7 +267,7 @@ export class BillingController {
           invoice_date: invoice_date ? new Date(invoice_date) : null,
           due_date: due_date ? new Date(due_date) : null,
           notes,
-          created_by: parseInt(req.user?.id!)
+          created_by: req.user?.id!
         },
         include: {
           project: {

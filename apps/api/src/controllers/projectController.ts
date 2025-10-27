@@ -32,7 +32,7 @@ export class ProjectController {
       // Check if user has active membership in projects
       const userMemberships = await prisma.projectMembership.findMany({
         where: {
-          user_id: parseInt(req.user.id),
+          user_id: req.user.id,
           is_active: true
         },
         select: {

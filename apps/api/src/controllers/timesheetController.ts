@@ -461,7 +461,7 @@ export class TimesheetController {
         data: {
           status: 'approved',
           approved_at: new Date(),
-          approved_by: req.user?.id,
+          approved_by: req.user?.uuid,
           notes: notes || timesheet.notes
         },
         include: {

@@ -47,7 +47,7 @@ export class TimeEntryController {
 
       // If user is not admin/manager, only show their own entries
       if (!['admin', 'manager'].includes(req.user.role)) {
-        where.user_id = parseInt(req.user.id);
+        where.user_id = req.user.id;
       } else if (user_id) {
         where.user_id = parseInt(user_id as string);
       }
@@ -193,7 +193,7 @@ export class TimeEntryController {
       const timeEntry = await prisma.timeEntry.create({
         data: {
           organization_id: organization.id,
-          user_id: parseInt(req.user.id),
+          user_id: req.user.id,
           project_id: project.id,
           entry_date: new Date(entry_date),
           duration_hours: parseFloat(duration_hours),
@@ -269,7 +269,7 @@ export class TimeEntryController {
       const timeEntry = await prisma.timeEntry.findFirst({
         where: {
           id: parseInt(id),
-          user_id: parseInt(req.user.id)
+          user_id: req.user.id
         }
       });
 
@@ -404,7 +404,7 @@ export class TimeEntryController {
       const timeEntry = await prisma.timeEntry.findFirst({
         where: {
           id: parseInt(id),
-          user_id: parseInt(req.user.id)
+          user_id: req.user.id
         }
       });
 
