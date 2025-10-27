@@ -20,10 +20,10 @@ export const devAuth = async (req: Request, res: Response, next: NextFunction) =
       });
     }
 
-    // Get a specific user from the database for development (employee user)
+    // Get a specific user from the database for development (manager user)
     const user = await prisma.user.findFirst({
       where: {
-        email: 'employee@worklog-dev.com'
+        email: 'manager@worklog.com'
       },
       select: { id: true, email: true, role: true, keycloak_id: true }
     });
