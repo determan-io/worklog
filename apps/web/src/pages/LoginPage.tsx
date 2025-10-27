@@ -1,8 +1,7 @@
-import React from 'react';
 import { useAuthStore } from '../stores/authStore';
 
 export default function LoginPage() {
-  const { login, setLoading } = useAuthStore();
+  const { login } = useAuthStore();
 
   const handleKeycloakLogin = () => {
     // Redirect to Keycloak login

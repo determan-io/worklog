@@ -1,14 +1,13 @@
-import React from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import { cn } from '../lib/utils';
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
   const { user, logout } = useAuthStore();
-  const [showUserMenu, setShowUserMenu] = React.useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleSignOut = () => {
     logout();
@@ -17,8 +16,8 @@ export default function Layout({ children }: LayoutProps) {
   };
 
   // Close menu when clicking outside
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+  useEffect(() => {
+    const handleClickOutside = (_event: MouseEvent) => {
       if (showUserMenu) {
         setShowUserMenu(false);
       }

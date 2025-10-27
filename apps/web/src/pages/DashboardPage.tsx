@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTimeEntries, useProjects, useOrganizations } from '../hooks/useApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -10,7 +9,7 @@ export default function DashboardPage() {
   });
   
   const { data: projectsData, isLoading: projectsLoading } = useProjects({ status: 'active' });
-  const { data: organizationsData, isLoading: orgsLoading } = useOrganizations();
+  const { isLoading: orgsLoading } = useOrganizations();
 
   const isLoading = timeEntriesLoading || projectsLoading || orgsLoading;
 
