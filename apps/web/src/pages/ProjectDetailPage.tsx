@@ -323,14 +323,17 @@ export default function ProjectDetailPage() {
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-600">
+                    <button
+                      onClick={() => navigate(`/time-entries/${entry.id}`)}
+                      className="text-sm font-medium text-gray-600 hover:text-blue-600 hover:underline transition-colors duration-200"
+                    >
                       {new Date(entry.entry_date).toLocaleDateString('en-US', { 
                         weekday: 'short', 
                         year: 'numeric', 
                         month: 'short', 
                         day: 'numeric' 
                       })}
-                    </p>
+                    </button>
                     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       entry.status === 'approved' ? 'bg-green-100 text-green-800' :
                       entry.status === 'submitted' ? 'bg-blue-100 text-blue-800' :
