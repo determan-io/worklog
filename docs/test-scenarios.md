@@ -363,7 +363,22 @@ This document outlines comprehensive test scenarios for each user role to ensure
 - Employee sees employee-level access (no Customers/Users links)
 - Employee can only see assigned projects
 
-#### ⚠️ UC-004: Admin Creates Manager via UI
+#### ✅ UC-004: Admin Edits User
+**Given:** Admin is logged in and has created a user  
+**When:**
+1. Navigate to Users page
+2. Click "Edit" on a user
+3. Update user details (e.g., first name changed to "Updated")
+4. Submit the form
+
+**Then:**
+- User is updated in database
+- User is updated in Keycloak (firstName/lastName changed)
+- User list reflects the changes
+- Keycloak admin console shows updated name
+- User's group and roles remain unchanged
+
+#### ⚠️ UC-006: Admin Creates Manager via UI
 **Given:** User is logged in as admin  
 **When:** 
 1. Navigate to Users page
@@ -378,8 +393,8 @@ This document outlines comprehensive test scenarios for each user role to ensure
 - Manager has correct realm roles: ["user", "manager"]
 - Manager can login and has manager-level access
 
-#### ⚠️ UC-005: Verify Manager Role in Keycloak
-**Given:** Admin has created a manager (UC-004)  
+#### ⚠️ UC-007: Verify Manager Role in Keycloak
+**Given:** Admin has created a manager (UC-006)  
 **When:** 
 1. Login to Keycloak admin (http://localhost:8080, admin/admin123)
 2. Navigate to the manager user
@@ -390,7 +405,7 @@ This document outlines comprehensive test scenarios for each user role to ensure
 - Manager belongs to correct organization group
 - Manager JWT token contains ["user", "manager"] roles
 
-#### ⚠️ UC-006: Employee Cannot Create Users
+#### ✅ UC-008: Employee Cannot Create Users
 **Given:** User is logged in as employee  
 **When:** They try to navigate to `/users` or `/users/create`  
 **Then:**
@@ -399,7 +414,7 @@ This document outlines comprehensive test scenarios for each user role to ensure
   - `POST /api/v1/users` returns 403 Forbidden
   - Error message: "Only administrators and managers can create users"
 
-#### ⚠️ UC-007: Cross-Organization User Creation
+#### ⚠️ UC-009: Cross-Organization User Creation
 **Given:** Admin from Organization 1 (Development)  
 **When:** They try to create a user  
 **Then:**
