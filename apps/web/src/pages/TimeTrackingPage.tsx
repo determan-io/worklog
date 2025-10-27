@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTimeEntries, useDeleteTimeEntry, useUpdateTimeEntry } from '../hooks/useApi';
+import { useTimeEntries, useProjects, useDeleteTimeEntry, useUpdateTimeEntry } from '../hooks/useApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function TimeTrackingPage() {
   const navigate = useNavigate();
   const { data: timeEntriesData, isLoading: timeEntriesLoading, refetch } = useTimeEntries();
+  const { data: projectsData, isLoading: projectsLoading } = useProjects();
   const deleteTimeEntryMutation = useDeleteTimeEntry();
   const updateTimeEntryMutation = useUpdateTimeEntry();
 
   const timeEntries = timeEntriesData?.data || [];
+  const projects = projectsData?.data || [];
   const isLoading = timeEntriesLoading;
+  const hasProjects = projects.length > 0;
 
   // Status filter state
   const [statusFilter, setStatusFilter] = useState('all');
@@ -132,26 +135,28 @@ export default function TimeTrackingPage() {
             Track your time on projects
           </p>
         </div>
-        <div className="flex gap-3">
-          <button
-            className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
-            onClick={() => navigate('/time-tracking/add')}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Add Time Entry
-          </button>
-          <button
-            className="btn-secondary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
-            onClick={() => navigate('/time-tracking/weekly')}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-            </svg>
-            Create Weekly Timesheet
-          </button>
-        </div>
+        {hasProjects && (
+          <div className="flex gap-3">
+            <button
+              className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={() => navigate('/time-tracking/add')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Time Entry
+            </button>
+            <button
+              className="btn-secondary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={() => navigate('/time-tracking/weekly')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Create Weekly Timesheet
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Time Entries List */}
