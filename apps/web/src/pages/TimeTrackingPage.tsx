@@ -187,11 +187,23 @@ export default function TimeTrackingPage() {
                     {entry.isWeekGroup ? (
                       <>
                         <h4 className="text-lg font-medium text-gray-900">
-                          Weekly Timesheet - {entry.task_description}
+                          <button 
+                            onClick={() => navigate(`/time-entries/${entry.weekEntries[0].id}`)}
+                            className="text-gray-900 hover:text-blue-600 hover:underline transition-colors"
+                          >
+                            Weekly Timesheet - {entry.task_description}
+                          </button>
                         </h4>
                         <div className="mt-1 text-sm text-gray-600">
                           <p>📋 {entry.project?.name} - {entry.project?.customer?.name}</p>
-                          <p>📅 Week of {new Date(entry.weekStartDate).toLocaleDateString()}</p>
+                          <p>
+                            📅 <button 
+                              onClick={() => navigate(`/time-entries/${entry.weekEntries[0].id}`)}
+                              className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                            >
+                              Week of {new Date(entry.weekStartDate).toLocaleDateString()}
+                            </button>
+                          </p>
                           <p>⏱️ {entry.totalHours.toFixed(2)} hours total ({entry.entry_count} days)</p>
                           {entry.hourly_rate && (
                             <p>💰 ${parseFloat(entry.hourly_rate).toFixed(2)}/hour</p>
