@@ -83,8 +83,9 @@ class ApiClient {
     return response.data;
   }
 
-  async getTimeEntry(id: number) {
-    const response: AxiosResponse = await this.client.get(`/time-entries/${id}`);
+  async getTimeEntry(id: number | string) {
+    // Use UUID endpoint
+    const response: AxiosResponse = await this.client.get(`/time-entries/uuid/${id}`);
     return response.data;
   }
 
@@ -93,13 +94,15 @@ class ApiClient {
     return response.data;
   }
 
-  async updateTimeEntry(id: number, data: any) {
-    const response: AxiosResponse = await this.client.put(`/time-entries/${id}`, data);
+  async updateTimeEntry(id: number | string, data: any) {
+    // Use UUID endpoint
+    const response: AxiosResponse = await this.client.put(`/time-entries/uuid/${id}`, data);
     return response.data;
   }
 
-  async deleteTimeEntry(id: number) {
-    const response: AxiosResponse = await this.client.delete(`/time-entries/${id}`);
+  async deleteTimeEntry(id: number | string) {
+    // Use UUID endpoint
+    const response: AxiosResponse = await this.client.delete(`/time-entries/uuid/${id}`);
     return response.data;
   }
 

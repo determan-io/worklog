@@ -5,7 +5,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 export default function TimeEntryDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: timeEntryData, isLoading } = useTimeEntry(parseInt(id || '0'));
+  const { data: timeEntryData, isLoading } = useTimeEntry(id || '');
 
   const timeEntry = timeEntryData?.data;
 

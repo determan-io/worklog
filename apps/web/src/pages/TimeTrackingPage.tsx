@@ -188,7 +188,7 @@ export default function TimeTrackingPage() {
                       <>
                         <h4 className="text-lg font-medium text-gray-900">
                           <button 
-                            onClick={() => navigate(`/time-entries/${entry.weekEntries[0].id}`)}
+                            onClick={() => navigate(`/time-entries/${entry.weekEntries[0].uuid}`)}
                             className="text-gray-900 hover:text-blue-600 hover:underline transition-colors"
                           >
                             Weekly Timesheet - {entry.task_description}
@@ -198,7 +198,7 @@ export default function TimeTrackingPage() {
                           <p>📋 {entry.project?.name} - {entry.project?.customer?.name}</p>
                           <p>
                             📅 <button 
-                              onClick={() => navigate(`/time-entries/${entry.weekEntries[0].id}`)}
+                              onClick={() => navigate(`/time-entries/${entry.weekEntries[0].uuid}`)}
                               className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                             >
                               Week of {new Date(entry.weekStartDate).toLocaleDateString()}
@@ -218,7 +218,7 @@ export default function TimeTrackingPage() {
                           {entry.entry_date && (
                             <p>
                               📅 <button 
-                                onClick={() => navigate(`/time-entries/${entry.id}`)}
+                                onClick={() => navigate(`/time-entries/${entry.uuid}`)}
                                 className="text-blue-600 hover:text-blue-800 hover:underline transition-colors"
                               >
                                 {new Date(entry.entry_date).toLocaleDateString()}
@@ -241,7 +241,7 @@ export default function TimeTrackingPage() {
                   <div className="flex space-x-2">
                     <button 
                       className="btn-outline btn-sm flex items-center gap-1 hover:bg-gray-50 transition-all duration-200"
-                      onClick={() => navigate(`/time-entries/${entry.id}`)}
+                      onClick={() => navigate(`/time-entries/${entry.uuid || entry.weekEntries[0].uuid}`)}
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

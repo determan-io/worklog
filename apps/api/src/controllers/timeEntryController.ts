@@ -71,7 +71,23 @@ export class TimeEntryController {
           orderBy: {
             entry_date: 'desc'
           },
-          include: {
+          select: {
+            id: true,
+            uuid: true,
+            organization_id: true,
+            user_id: true,
+            project_id: true,
+            task_description: true,
+            entry_date: true,
+            duration_hours: true,
+            is_billable: true,
+            hourly_rate: true,
+            notes: true,
+            status: true,
+            approved_at: true,
+            approved_by: true,
+            created_at: true,
+            updated_at: true,
             user: {
               select: {
                 uuid: true,
@@ -162,7 +178,128 @@ export class TimeEntryController {
 
       const timeEntry = await prisma.timeEntry.findFirst({
         where,
-        include: {
+        select: {
+          id: true,
+          uuid: true,
+          organization_id: true,
+          user_id: true,
+          project_id: true,
+          task_description: true,
+          entry_date: true,
+          duration_hours: true,
+          is_billable: true,
+          hourly_rate: true,
+          notes: true,
+          status: true,
+          approved_at: true,
+          approved_by: true,
+          created_at: true,
+          updated_at: true,
+          user: {
+            select: {
+              uuid: true,
+              email: true,
+              first_name: true,
+              last_name: true
+            }
+          },
+          project: {
+            select: {
+              id: true,
+              name: true,
+              customer: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!timeEntry) {
+        return res.status(404).json({
+          error: {
+            code: 'TIME_ENTRY_NOT_FOUND',
+            message: 'Time entry not found or access denied'
+          }
+        });
+      }
+
+      return res.json({
+        data: timeEntry,
+        message: 'Time entry retrieved successfully'
+      });
+    } catch (error) {
+      console.error('Error fetching time entry:', error);
+      return res.status(500).json({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to fetch time entry'
+        }
+      });
+    }
+  }
+
+  // Get single time entry by UUID
+  async getTimeEntryByUuid(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      const { uuid } = req.params;
+
+      // Get organization ID from UUID
+      const organization = await prisma.organization.findUnique({
+        where: { uuid: req.user.organizationId },
+        select: { id: true }
+      });
+
+      if (!organization) {
+        return res.status(404).json({
+          error: {
+            code: 'ORGANIZATION_NOT_FOUND',
+            message: 'Organization not found'
+          }
+        });
+      }
+
+      const where: any = {
+        uuid: uuid,
+        organization_id: organization.id
+      };
+
+      // If user is not admin/manager, only show their own entries
+      if (!['admin', 'manager'].includes(req.user.role)) {
+        where.user_id = req.user.id;
+      }
+
+      const timeEntry = await prisma.timeEntry.findFirst({
+        where,
+        select: {
+          id: true,
+          uuid: true,
+          organization_id: true,
+          user_id: true,
+          project_id: true,
+          task_description: true,
+          entry_date: true,
+          duration_hours: true,
+          is_billable: true,
+          hourly_rate: true,
+          notes: true,
+          status: true,
+          approved_at: true,
+          approved_by: true,
+          created_at: true,
+          updated_at: true,
           user: {
             select: {
               uuid: true,
@@ -493,6 +630,241 @@ export class TimeEntryController {
       const timeEntry = await prisma.timeEntry.findFirst({
         where: {
           id: parseInt(id),
+          user_id: req.user.id
+        }
+      });
+
+      if (!timeEntry) {
+        return res.status(404).json({
+          error: {
+            code: 'TIME_ENTRY_NOT_FOUND',
+            message: 'Time entry not found or access denied'
+          }
+        });
+      }
+
+      // Check if entry is editable (draft or rejected only)
+      if (!['draft', 'rejected'].includes(timeEntry.status)) {
+        return res.status(400).json({
+          error: {
+            code: 'ENTRY_NOT_DELETABLE',
+            message: 'Time entry cannot be deleted. Only draft or rejected entries can be deleted.'
+          }
+        });
+      }
+
+      await prisma.timeEntry.delete({
+        where: { id: timeEntry.id }
+      });
+
+      return res.json({
+        message: 'Time entry deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting time entry:', error);
+      return res.status(500).json({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to delete time entry'
+        }
+      });
+    }
+  }
+
+  // Update time entry by UUID
+  async updateTimeEntryByUuid(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      const { uuid } = req.params;
+      const {
+        entry_date,
+        duration_hours,
+        task_description,
+        is_billable,
+        hourly_rate,
+        notes,
+        status
+      } = req.body;
+
+      // Get time entry
+      const timeEntry = await prisma.timeEntry.findFirst({
+        where: {
+          uuid: uuid,
+          user_id: req.user.id
+        }
+      });
+
+      if (!timeEntry) {
+        return res.status(404).json({
+          error: {
+            code: 'TIME_ENTRY_NOT_FOUND',
+            message: 'Time entry not found or access denied'
+          }
+        });
+      }
+
+      // If updating status to submitted, allow it for draft/rejected entries
+      if (status && status === 'submitted') {
+        if (!['draft', 'rejected'].includes(timeEntry.status)) {
+          return res.status(400).json({
+            error: {
+              code: 'ENTRY_NOT_SUBMITTABLE',
+              message: 'Time entry cannot be submitted. Only draft or rejected entries can be submitted.'
+            }
+          });
+        }
+        
+        // Update status to submitted
+        const updatedEntry = await prisma.timeEntry.update({
+          where: { id: timeEntry.id },
+          data: { status: 'submitted' },
+          select: {
+            id: true,
+            uuid: true,
+            organization_id: true,
+            user_id: true,
+            project_id: true,
+            task_description: true,
+            entry_date: true,
+            duration_hours: true,
+            is_billable: true,
+            hourly_rate: true,
+            notes: true,
+            status: true,
+            approved_at: true,
+            approved_by: true,
+            created_at: true,
+            updated_at: true,
+            user: {
+              select: {
+                uuid: true,
+                email: true,
+                first_name: true,
+                last_name: true
+              }
+            },
+            project: {
+              select: {
+                id: true,
+                name: true,
+                customer: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        return res.json({
+          data: updatedEntry,
+          message: 'Time entry submitted successfully'
+        });
+      }
+
+      // For other updates, check if entry is editable (draft or rejected only)
+      if (!['draft', 'rejected'].includes(timeEntry.status)) {
+        return res.status(400).json({
+          error: {
+            code: 'ENTRY_NOT_EDITABLE',
+            message: 'Time entry cannot be edited. Only draft or rejected entries can be modified.'
+          }
+        });
+      }
+
+      const updatedEntry = await prisma.timeEntry.update({
+        where: { id: timeEntry.id },
+        data: {
+          entry_date: entry_date ? new Date(entry_date) : undefined,
+          duration_hours: duration_hours ? parseFloat(duration_hours) : undefined,
+          task_description,
+          is_billable,
+          hourly_rate: hourly_rate ? parseFloat(hourly_rate) : undefined,
+          notes
+        },
+        select: {
+          id: true,
+          uuid: true,
+          organization_id: true,
+          user_id: true,
+          project_id: true,
+          task_description: true,
+          entry_date: true,
+          duration_hours: true,
+          is_billable: true,
+          hourly_rate: true,
+          notes: true,
+          status: true,
+          approved_at: true,
+          approved_by: true,
+          created_at: true,
+          updated_at: true,
+          user: {
+            select: {
+              id: true,
+              email: true,
+              first_name: true,
+              last_name: true
+            }
+          },
+          project: {
+            select: {
+              id: true,
+              name: true,
+              customer: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return res.json({
+        data: updatedEntry,
+        message: 'Time entry updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating time entry:', error);
+      return res.status(500).json({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to update time entry'
+        }
+      });
+    }
+  }
+
+  // Delete time entry by UUID
+  async deleteTimeEntryByUuid(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      const { uuid } = req.params;
+
+      // Get time entry
+      const timeEntry = await prisma.timeEntry.findFirst({
+        where: {
+          uuid: uuid,
           user_id: req.user.id
         }
       });

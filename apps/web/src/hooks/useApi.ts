@@ -78,7 +78,7 @@ export const useTimeEntries = (params?: any) => {
   });
 };
 
-export const useTimeEntry = (id: number) => {
+export const useTimeEntry = (id: number | string) => {
   return useQuery({
     queryKey: ['time-entries', id],
     queryFn: () => apiClient.getTimeEntry(id),
@@ -101,7 +101,7 @@ export const useUpdateTimeEntry = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => 
+    mutationFn: ({ id, data }: { id: number | string; data: any }) => 
       apiClient.updateTimeEntry(id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['time-entries', id] });
@@ -114,7 +114,7 @@ export const useDeleteTimeEntry = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (id: number) => apiClient.deleteTimeEntry(id),
+    mutationFn: (id: number | string) => apiClient.deleteTimeEntry(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-entries'] });
     },
