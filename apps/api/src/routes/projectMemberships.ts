@@ -1,8 +1,8 @@
-import { Router, type Express } from 'express';
+import { Router } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import projectMembershipController from '../controllers/projectMembershipController';
 
-const router: Express.Router = Router();
+const router: Router = Router();
 
 // All routes require authentication
 router.use(authenticateToken);
