@@ -29,24 +29,37 @@ export class ProjectController {
         organization_id: req.user.organizationId
       };
 
-      // Check if user has active membership in projects
-      const userMemberships = await prisma.projectMembership.findMany({
-        where: {
-          user_id: req.user.id,
-          is_active: true
-        },
-        select: {
-          project_id: true
-        }
-      });
+      // Role-based access control
+      // Employees can only see active projects they're assigned to
+      // Admins and managers can see all projects in their organization
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee access - filtering by active project memberships');
+        
+        const userMemberships = await prisma.projectMembership.findMany({
+          where: {
+            user_id: req.user.id,
+            is_active: true
+          },
+          select: {
+            project_id: true
+          }
+        });
 
-      // Filter by user's project memberships (only show projects they're assigned to)
-      // If user has memberships, filter by them. Otherwise, show all projects in the organization.
-      const userProjectIds = userMemberships.map(m => m.project_id);
-      if (userProjectIds.length > 0) {
-        where.id = {
-          in: userProjectIds
-        };
+        const userProjectIds = userMemberships.map(m => m.project_id);
+        if (userProjectIds.length > 0) {
+          where.id = {
+            in: userProjectIds
+          };
+          // Employees can only see active projects
+          where.is_active = true;
+        } else {
+          // Employee has no memberships, return empty array
+          where.id = {
+            in: []
+          };
+        }
+      } else {
+        console.log('✅ Admin/Manager access - showing all organization projects');
       }
 
       if (customer_id) {
@@ -146,6 +159,28 @@ export class ProjectController {
         });
       }
 
+      // Role-based access control
+      // Employees can only see active projects they're assigned to
+      if (req.user.role === 'employee') {
+        const membership = await prisma.projectMembership.findFirst({
+          where: {
+            project_id: id,
+            user_id: req.user.id,
+            is_active: true
+          }
+        });
+
+        if (!membership) {
+          console.log('🔒 Employee attempted to access project without membership - blocked');
+          return res.status(403).json({
+            error: {
+              code: 'FORBIDDEN',
+              message: 'You do not have access to this project'
+            }
+          });
+        }
+      }
+
       const project = await prisma.project.findFirst({
         where: {
           id,
@@ -218,6 +253,17 @@ export class ProjectController {
           error: {
             code: 'PROJECT_NOT_FOUND',
             message: 'Project not found or access denied'
+          }
+        });
+      }
+
+      // Employees can only access active projects
+      if (req.user.role === 'employee' && !project.is_active) {
+        console.log('🔒 Employee attempted to access inactive project - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'You can only access active projects'
           }
         });
       }
