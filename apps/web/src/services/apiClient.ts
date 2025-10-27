@@ -83,6 +83,11 @@ class ApiClient {
     return response.data;
   }
 
+  async getTimeEntry(id: number) {
+    const response: AxiosResponse = await this.client.get(`/time-entries/${id}`);
+    return response.data;
+  }
+
   async createTimeEntry(data: any) {
     const response: AxiosResponse = await this.client.post('/time-entries', data);
     return response.data;

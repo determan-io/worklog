@@ -121,6 +121,95 @@ export class TimeEntryController {
     }
   }
 
+  // Get single time entry by ID
+  async getTimeEntry(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({
+          error: {
+            code: 'AUTHENTICATION_REQUIRED',
+            message: 'Authentication required'
+          }
+        });
+      }
+
+      const { id } = req.params;
+
+      // Get organization ID from UUID
+      const organization = await prisma.organization.findUnique({
+        where: { uuid: req.user.organizationId },
+        select: { id: true }
+      });
+
+      if (!organization) {
+        return res.status(404).json({
+          error: {
+            code: 'ORGANIZATION_NOT_FOUND',
+            message: 'Organization not found'
+          }
+        });
+      }
+
+      const where: any = {
+        id: parseInt(id),
+        organization_id: organization.id
+      };
+
+      // If user is not admin/manager, only show their own entries
+      if (!['admin', 'manager'].includes(req.user.role)) {
+        where.user_id = req.user.id;
+      }
+
+      const timeEntry = await prisma.timeEntry.findFirst({
+        where,
+        include: {
+          user: {
+            select: {
+              uuid: true,
+              email: true,
+              first_name: true,
+              last_name: true
+            }
+          },
+          project: {
+            select: {
+              id: true,
+              name: true,
+              customer: {
+                select: {
+                  id: true,
+                  name: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!timeEntry) {
+        return res.status(404).json({
+          error: {
+            code: 'TIME_ENTRY_NOT_FOUND',
+            message: 'Time entry not found or access denied'
+          }
+        });
+      }
+
+      return res.json({
+        data: timeEntry,
+        message: 'Time entry retrieved successfully'
+      });
+    } catch (error) {
+      console.error('Error fetching time entry:', error);
+      return res.status(500).json({
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Failed to fetch time entry'
+        }
+      });
+    }
+  }
+
   // Create time entry
   async createTimeEntry(req: Request, res: Response) {
     try {

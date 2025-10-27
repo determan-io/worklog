@@ -14,6 +14,7 @@ import CustomerFormPage from './pages/CustomerFormPage';
 import ProjectFormPage from './pages/ProjectFormPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import TimeEntryFormPage from './pages/TimeEntryFormPage';
+import TimeEntryDetailPage from './pages/TimeEntryDetailPage';
 import UsersPage from './pages/UsersPage';
 import UserDetailPage from './pages/UserDetailPage';
 import UserFormPage from './pages/UserFormPage';
@@ -67,6 +68,7 @@ function App() {
         <Route path="/time-tracking/add" element={<TimeEntryFormPage />} />
         <Route path="/time-tracking/weekly" element={<TimeEntryFormPage />} />
         <Route path="/time-tracking/edit/:id" element={<TimeEntryFormPage />} />
+        <Route path="/time-entries/:id" element={<TimeEntryDetailPage />} />
         <Route path="/projects" element={<ProjectsPage />} />
         <Route path="/projects/detail/:id" element={<ProjectDetailPage />} />
         <Route path="/projects/create" element={<ProjectFormPage />} />

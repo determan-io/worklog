@@ -78,6 +78,14 @@ export const useTimeEntries = (params?: any) => {
   });
 };
 
+export const useTimeEntry = (id: number) => {
+  return useQuery({
+    queryKey: ['time-entries', id],
+    queryFn: () => apiClient.getTimeEntry(id),
+    enabled: !!id,
+  });
+};
+
 export const useCreateTimeEntry = () => {
   const queryClient = useQueryClient();
   

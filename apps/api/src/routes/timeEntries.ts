@@ -14,6 +14,9 @@ router.get('/', timeEntryController.getTimeEntries.bind(timeEntryController));
 // POST /api/v1/time-entries - Create time entry
 router.post('/', timeEntryController.createTimeEntry.bind(timeEntryController));
 
+// GET /api/v1/time-entries/:id - Get single time entry (must be before PUT/DELETE)
+router.get('/:id', timeEntryController.getTimeEntry.bind(timeEntryController));
+
 // PUT /api/v1/time-entries/:id - Update time entry
 router.put('/:id', timeEntryController.updateTimeEntry.bind(timeEntryController));
 
