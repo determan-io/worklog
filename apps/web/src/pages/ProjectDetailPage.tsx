@@ -192,18 +192,10 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-blue-50 rounded-lg p-4">
             <p className="text-sm font-medium text-blue-600 mb-1">Total Hours</p>
             <p className="text-3xl font-bold text-gray-900">{totalHours.toFixed(2)}</p>
-          </div>
-          <div className="bg-green-50 rounded-lg p-4">
-            <p className="text-sm font-medium text-green-600 mb-1">Billable</p>
-            <p className="text-3xl font-bold text-gray-900">{billableHours.toFixed(2)}</p>
-          </div>
-          <div className="bg-yellow-50 rounded-lg p-4">
-            <p className="text-sm font-medium text-yellow-600 mb-1">Non-Billable</p>
-            <p className="text-3xl font-bold text-gray-900">{nonBillableHours.toFixed(2)}</p>
           </div>
           <div className="bg-purple-50 rounded-lg p-4">
             <p className="text-sm font-medium text-purple-600 mb-1">Avg/Week</p>
@@ -329,9 +321,6 @@ export default function ProjectDetailPage() {
                     }`}>
                       {entry.status}
                     </span>
-                    {entry.is_billable && (
-                      <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Billable</span>
-                    )}
                   </div>
                   {entry.description && (
                     <p className="text-sm text-gray-600 mt-1">{entry.description}</p>
