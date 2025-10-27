@@ -17,9 +17,13 @@ export default function Layout({ children }: LayoutProps) {
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (_event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (showUserMenu) {
-        setShowUserMenu(false);
+        const target = event.target as HTMLElement;
+        // Don't close if clicking inside the button or menu
+        if (!target.closest('.user-menu-container')) {
+          setShowUserMenu(false);
+        }
       }
     };
 
@@ -36,7 +40,7 @@ export default function Layout({ children }: LayoutProps) {
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-900">WorkLog</h1>
               {user && (
-                <div className="relative">
+                <div className="relative user-menu-container">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
