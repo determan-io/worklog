@@ -295,12 +295,13 @@ export class ProjectController {
         });
       }
 
-      // Check if user has permission to create projects
-      if (!['admin', 'manager'].includes(req.user.role)) {
+      // Only admins and managers can create projects
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee attempted to create project - blocked');
         return res.status(403).json({
           error: {
-            code: 'INSUFFICIENT_PERMISSIONS',
-            message: 'Admin or manager role required'
+            code: 'FORBIDDEN',
+            message: 'Only administrators and managers can create projects'
           }
         });
       }
@@ -401,6 +402,17 @@ export class ProjectController {
           error: {
             code: 'AUTHENTICATION_REQUIRED',
             message: 'Authentication required'
+          }
+        });
+      }
+
+      // Only admins and managers can update projects
+      if (req.user.role === 'employee') {
+        console.log('🔒 Employee attempted to update project - blocked');
+        return res.status(403).json({
+          error: {
+            code: 'FORBIDDEN',
+            message: 'Only administrators and managers can update projects'
           }
         });
       }
