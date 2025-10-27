@@ -59,24 +59,16 @@ describe('AuthStore', () => {
     expect(state.isAuthenticated).toBe(false);
   });
 
-  it('should update user data', () => {
-    const mockUser = {
-      id: '1',
-      uuid: 'test-uuid',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john@example.com',
-      role: 'employee',
-      organizationId: 'org-1',
-    };
-
-    useAuthStore.getState().login('mock-token', mockUser);
+  it('should set loading state', () => {
+    useAuthStore.getState().setLoading(true);
     
-    const updatedUser = { ...mockUser, firstName: 'Jane' };
-    useAuthStore.getState().updateUser(updatedUser);
+    let state = useAuthStore.getState();
+    expect(state.isLoading).toBe(true);
     
-    const state = useAuthStore.getState();
-    expect(state.user?.firstName).toBe('Jane');
+    useAuthStore.getState().setLoading(false);
+    
+    state = useAuthStore.getState();
+    expect(state.isLoading).toBe(false);
   });
 });
 
