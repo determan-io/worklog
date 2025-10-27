@@ -360,6 +360,39 @@ export class UserController {
         // Continue even if role assignment fails
       }
 
+      // Assign user to organization group in Keycloak
+      try {
+        // Find the organization group by name (organization.name matches group name)
+        const groupsResponse = await axios.get(
+          `http://localhost:8080/admin/realms/worklog/groups`,
+          {
+            headers: {
+              'Authorization': `Bearer ${adminToken}`
+            }
+          }
+        );
+
+        const orgGroup = groupsResponse.data.find((group: any) => group.name === organization.name);
+        
+        if (orgGroup) {
+          await axios.put(
+            `http://localhost:8080/admin/realms/worklog/users/${keycloakUserId}/groups/${orgGroup.id}`,
+            {},
+            {
+              headers: {
+                'Authorization': `Bearer ${adminToken}`
+              }
+            }
+          );
+          console.log('✅ User assigned to organization group in Keycloak');
+        } else {
+          console.warn(`⚠️ Organization group not found: ${organization.name}`);
+        }
+      } catch (error) {
+        console.error('Error assigning group in Keycloak:', error);
+        // Continue even if group assignment fails
+      }
+
       // Create user in database
       const user = await prisma.user.create({
         data: {
