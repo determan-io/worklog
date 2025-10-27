@@ -329,21 +329,21 @@ This document outlines comprehensive test scenarios for each user role to ensure
 - Employee has the correct realm roles: ["user", "employee"]
 - Employee can be found in Keycloak admin panel
 
-#### ⚠️ UC-002: Verify User in Keycloak Admin
-**Given:** Admin has created an employee via UI  
+#### ⚠️ UC-002: Verify User in Keycloak Admin (Part of UC-001)
+**Given:** Admin has created an employee via UI (UC-001)  
 **When:** 
-1. Login to Keycloak admin console (http://localhost:8080)
-2. Navigate to Users section
+1. Login to Keycloak admin console (http://localhost:8080, admin/admin123)
+2. Navigate to Realm > worklog > Users
 3. Search for the newly created employee
 4. Click on the user to view details
 
 **Then:**
 - User exists in Keycloak
 - User has email verified: true
-- User belongs to the correct group (organization)
-  - Organization 1 users: `/WorkLog Development`
-  - Organization 2 users: `/WorkLog Production`
-- User has the correct realm roles:
+- **In Groups tab:** User belongs to correct organization group
+  - Organization 1: `/WorkLog Development`
+  - Organization 2: `/WorkLog Production`
+- **In Role Mappings tab:** User has correct realm roles
   - `user` (base role)
   - `employee` (specific role)
 - User is enabled: true
@@ -379,8 +379,12 @@ This document outlines comprehensive test scenarios for each user role to ensure
 - Manager can login and has manager-level access
 
 #### ⚠️ UC-005: Verify Manager Role in Keycloak
-**Given:** Admin has created a manager  
-**When:** Check manager in Keycloak admin  
+**Given:** Admin has created a manager (UC-004)  
+**When:** 
+1. Login to Keycloak admin (http://localhost:8080, admin/admin123)
+2. Navigate to the manager user
+3. Check Groups tab and Role Mappings tab
+
 **Then:**
 - Manager has realm roles: ["user", "manager"]
 - Manager belongs to correct organization group
@@ -404,39 +408,8 @@ This document outlines comprehensive test scenarios for each user role to ensure
 - User belongs to `/WorkLog Development` in Keycloak
 - User cannot access Organization 2 data
 
-### Keycloak Verification Steps
-
-#### ⚠️ KV-001: Login to Keycloak Admin
-**Given:** Need to verify Keycloak configuration  
-**When:** Access http://localhost:8080  
-**Then:**
-- Login page is displayed
-- Can login with: admin / admin123
-- Admin console is accessible
-
-#### ⚠️ KV-002: Navigate to Realm Settings
-**Given:** Logged into Keycloak admin  
-**When:** Navigate to Realm > worklog > Realm Settings  
-**Then:**
-- Realm "worklog" is configured
-- Roles exist: user, admin, manager, employee
-
-#### ⚠️ KV-003: Check User Groups
-**Given:** Viewing a user in Keycloak admin  
-**When:** Navigate to user's Groups tab  
-**Then:**
-- User belongs to correct organization group
-- Organization 1: `/WorkLog Development`
-- Organization 2: `/WorkLog Production`
-
-#### ⚠️ KV-004: Check User Roles
-**Given:** Viewing a user in Keycloak admin  
-**When:** Navigate to user's Role Mappings tab  
-**Then:**
-- User has correct realm roles assigned
-- Employee: ["user", "employee"]
-- Manager: ["user", "manager"]
-- Admin: ["user", "admin"]
+### Keycloak Admin Access
+**Note:** To verify user creation, access Keycloak admin at http://localhost:8080 with admin/admin123
 
 ---
 
