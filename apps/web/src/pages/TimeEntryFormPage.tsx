@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useProjects, useCreateTimeEntry, useUpdateTimeEntry, useTimeEntries } from '../hooks/useApi';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -32,7 +32,8 @@ export default function TimeEntryFormPage() {
   // Load entry data when in edit mode
   useEffect(() => {
     if (isEditMode && id && timeEntries.length > 0) {
-      const foundEntry = timeEntries.find((e: any) => e.id === parseInt(id));
+      // Use UUID for lookup (id from URL is UUID)
+      const foundEntry = timeEntries.find((e: any) => e.uuid === id || e.id === id);
       if (foundEntry) {
         setEntry({
           project_id: foundEntry.project_id,
@@ -149,7 +150,7 @@ export default function TimeEntryFormPage() {
       if (isEditMode && id) {
         // Don't send project_id when updating (it can't be changed)
         const { project_id, ...updateData } = entry;
-        await updateTimeEntryMutation.mutateAsync({ id: parseInt(id), data: updateData });
+        await updateTimeEntryMutation.mutateAsync({ id: id, data: updateData });
       } else {
         await createTimeEntryMutation.mutateAsync(entry);
       }

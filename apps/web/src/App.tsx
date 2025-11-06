@@ -1,10 +1,12 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore } from './stores/authStore';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import KeycloakCallbackPage from './pages/KeycloakCallbackPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import TimeTrackingPage from './pages/TimeTrackingPage';
 import ProjectsPage from './pages/ProjectsPage';
@@ -26,7 +28,32 @@ import SettingsPage from './pages/SettingsPage';
 import LoadingSpinner from './components/LoadingSpinner';
 
 function App() {
-  const { isAuthenticated, isLoading, user, token } = useAuthStore();
+  const { isAuthenticated, isLoading, user, token, logout } = useAuthStore();
+  const location = useLocation();
+
+  // If logout parameter is in URL, clear auth state
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('logout') === 'true') {
+      logout();
+      localStorage.removeItem('auth-token');
+      localStorage.removeItem('auth-storage');
+      // Force clear persisted state
+      try {
+        localStorage.setItem('auth-storage', JSON.stringify({
+          state: {
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+          },
+          version: 0,
+        }));
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+  }, [location.search, logout]);
 
   // Sync token from auth store to localStorage for API client
   useEffect(() => {
@@ -53,6 +80,8 @@ function App() {
     return (
       <Routes>
         <Route path="/auth/callback" element={<KeycloakCallbackPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<LoginPage />} />
       </Routes>
     );
@@ -85,7 +114,7 @@ function App() {
         <Route path="/users/edit/:id" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><UserFormPage /></ProtectedRoute>} />
         <Route path="/users/:userId/add-project" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><AddProjectToUserPage /></ProtectedRoute>} />
         <Route path="/users/:userId/edit-membership/:membershipId" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><EditMembershipPage /></ProtectedRoute>} />
-        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports" element={<ProtectedRoute allowedRoles={['admin', 'manager']}><ReportsPage /></ProtectedRoute>} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

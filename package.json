@@ -41,13 +41,19 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
     "prepare": "node -e \"if(!process.env.CI){require('husky').install();}\" || true"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^20.19.23",
     "concurrently": "^8.2.2",
-    "prettier": "^3.2.5",
     "husky": "^9.0.11",
-    "lint-staged": "^15.2.2"
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

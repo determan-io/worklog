@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useCreateProject, useUpdateProject, useProjects, useProject, useCustomers } from '../hooks/useApi';
 import { validateProject } from '../schemas/projectSchema';

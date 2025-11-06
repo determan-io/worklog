@@ -84,6 +84,7 @@ export default function TimeTrackingPage() {
           
           processedEntries.push({
             ...weekEntries[0],
+            uuid: weekEntries[0].uuid, // Ensure UUID is available for week groups
             isWeekGroup: true,
             weekEntries: weekEntries,
             weekStartDate: monday.toISOString().split('T')[0],
@@ -109,10 +110,20 @@ export default function TimeTrackingPage() {
   
   const groupedEntries = groupEntriesByWeek(filteredEntries);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (entry: any) => {
     if (window.confirm('Are you sure you want to delete this time entry?')) {
       try {
-        await deleteTimeEntryMutation.mutateAsync(id);
+        if (entry.isWeekGroup) {
+          // Delete all entries in the week
+          await Promise.all(
+            entry.weekEntries.map((weekEntry: any) =>
+              deleteTimeEntryMutation.mutateAsync(weekEntry.uuid)
+            )
+          );
+        } else {
+          // Delete single entry
+          await deleteTimeEntryMutation.mutateAsync(entry.uuid);
+        }
         refetch();
       } catch (error) {
         console.error('Failed to delete time entry:', error);
@@ -120,9 +131,25 @@ export default function TimeTrackingPage() {
     }
   };
 
-  const handleSubmit = async (id: number) => {
+  const handleSubmit = async (entry: any) => {
     try {
-      await updateTimeEntryMutation.mutateAsync({ id, data: { status: 'submitted' } });
+    if (entry.isWeekGroup) {
+      // Submit all entries in the week
+      await Promise.all(
+        entry.weekEntries.map((weekEntry: any) =>
+          updateTimeEntryMutation.mutateAsync({ 
+            id: weekEntry.uuid, 
+            data: { status: 'submitted' } 
+          })
+        )
+      );
+    } else {
+      // Submit single entry
+      await updateTimeEntryMutation.mutateAsync({ 
+        id: entry.uuid, 
+        data: { status: 'submitted' } 
+      });
+    }
       refetch();
     } catch (error) {
       console.error('Failed to submit time entry:', error);
@@ -132,40 +159,39 @@ export default function TimeTrackingPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Time Tracking</h1>
-          <p className="mt-2 text-gray-600">
-            Track your time on projects
-          </p>
-        </div>
-        {hasProjects && (hasIndividualEntryProjects || hasTimesheetProjects) && (
-          <div className="flex gap-3">
-            {hasIndividualEntryProjects && (
-              <button
-                className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
-                onClick={() => navigate('/time-tracking/add')}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                Add Time Entry
-              </button>
-            )}
-            {hasTimesheetProjects && (
-              <button
-                className="btn-secondary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
-                onClick={() => navigate('/time-tracking/weekly')}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                </svg>
-                Create Weekly Timesheet
-              </button>
-            )}
-          </div>
-        )}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Time Tracking</h1>
+        <p className="mt-2 text-gray-600">
+          Track your time on projects
+        </p>
       </div>
+
+      {hasProjects && (hasIndividualEntryProjects || hasTimesheetProjects) && (
+        <div className="mb-6 flex justify-end gap-3">
+          {hasIndividualEntryProjects && (
+            <button
+              className="btn-primary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={() => navigate('/time-tracking/add')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Time Entry
+            </button>
+          )}
+          {hasTimesheetProjects && (
+            <button
+              className="btn-secondary btn-md flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={() => navigate('/time-tracking/weekly')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Create Weekly Timesheet
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Time Entries List */}
       <div className="card p-6">
@@ -201,7 +227,7 @@ export default function TimeTrackingPage() {
                       <>
                         <h4 className="text-lg font-medium text-gray-900">
                           <button 
-                            onClick={() => navigate(`/time-entries/${entry.weekEntries[0].uuid}`)}
+                            onClick={() => navigate(`/time-entries/${entry.uuid}`)}
                             className="text-gray-900 hover:text-blue-600 hover:underline transition-colors"
                           >
                             Weekly Timesheet - {entry.task_description}
@@ -240,7 +266,7 @@ export default function TimeTrackingPage() {
                   <div className="flex space-x-2">
                     <button 
                       className="btn-outline btn-sm flex items-center gap-1 hover:bg-gray-50 transition-all duration-200"
-                      onClick={() => navigate(`/time-entries/${entry.uuid || entry.weekEntries[0].uuid}`)}
+                      onClick={() => navigate(`/time-entries/${entry.uuid}`)}
                     >
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -252,7 +278,7 @@ export default function TimeTrackingPage() {
                       <>
                         <button 
                           className="btn-outline btn-sm flex items-center gap-1 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                          onClick={() => navigate(`/time-tracking/edit/${entry.id}`)}
+                          onClick={() => navigate(`/time-tracking/edit/${entry.uuid}`)}
                         >
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -261,7 +287,7 @@ export default function TimeTrackingPage() {
                         </button>
                         <button 
                           className="btn-outline btn-sm flex items-center gap-1 hover:bg-red-50 hover:border-red-300 transition-all duration-200 text-red-600"
-                          onClick={() => handleDelete(entry.id)}
+                          onClick={() => handleDelete(entry)}
                           disabled={deleteTimeEntryMutation.isPending}
                         >
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,7 +300,7 @@ export default function TimeTrackingPage() {
                     {canSubmit(entry.status) && (
                       <button 
                         className="btn-primary btn-sm flex items-center gap-1 hover:bg-green-600 transition-all duration-200"
-                        onClick={() => handleSubmit(entry.id)}
+                        onClick={() => handleSubmit(entry)}
                         disabled={updateTimeEntryMutation.isPending}
                       >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

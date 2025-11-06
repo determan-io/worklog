@@ -10,12 +10,21 @@ export default function Layout({ children }: LayoutProps) {
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleSignOut = () => {
+    // Clear all auth state first - logout from store
     logout();
-    localStorage.clear();
-    sessionStorage.clear();
     
-    // Redirect to Keycloak logout with proper redirect
-    const keycloakLogoutUrl = `http://localhost:8080/realms/worklog/protocol/openid-connect/logout?client_id=worklog-web&post_logout_redirect_uri=${encodeURIComponent('http://localhost:3000/login')}`;
+    // Clear local storage
+    try {
+      localStorage.removeItem('auth-token');
+      localStorage.removeItem('auth-storage');
+      // Set logout flag to prevent re-auth during Keycloak logout redirect
+      sessionStorage.setItem('logout-flag', 'true');
+    } catch (e) {
+      // Ignore errors
+    }
+    
+    // Redirect to Keycloak logout endpoint, which will then redirect back to login
+    const keycloakLogoutUrl = `http://localhost:8080/realms/worklog/protocol/openid-connect/logout?client_id=worklog-web&post_logout_redirect_uri=${encodeURIComponent('http://localhost:3000/login?logout=true')}`;
     window.location.href = keycloakLogoutUrl;
   };
 
@@ -115,12 +124,14 @@ export default function Layout({ children }: LayoutProps) {
                   Users
                 </a>
               )}
-              <a
-                href="/reports"
-                className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
-              >
-                Reports
-              </a>
+              {(user?.role === 'admin' || user?.role === 'manager') && (
+                <a
+                  href="/reports"
+                  className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100"
+                >
+                  Reports
+                </a>
+              )}
             </div>
           </nav>
         </aside>

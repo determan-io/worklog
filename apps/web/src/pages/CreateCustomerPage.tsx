@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateCustomer, useCustomers } from '../hooks/useApi';
 import { validateCustomer } from '../schemas/customerSchema';
